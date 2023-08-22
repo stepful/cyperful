@@ -27,6 +27,10 @@ yarn build
 
 (If we release this as a gem, we'll include the frontend assets in the gem, so you won't need to build them yourself.)
 
+## Testing frameworks
+
+Currently, Cyperful only works with the default Rails testing stack: Minitest and Capybara. Please open an issue if you'd like to see support for other test frameworks.
+
 ## Usage
 
 In your `application_system_test_case.rb` file, add the following:
