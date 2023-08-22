@@ -462,8 +462,13 @@ module Cyperful::SystemTestHelper
 end
 
 # we need to allow the iframe to be embedded in the cyperful server
-Rails.application.config.content_security_policy do |policy|
-  policy.frame_ancestors(:self, "localhost:3004")
+# TODO: use Rack middleware instead to support non-Rails apps
+if const_defined?(:Rails)
+  Rails.application.config.content_security_policy do |policy|
+    policy.frame_ancestors(:self, "localhost:3004")
+  end
+else
+  warn "Cyperful: Rails not detected, skipping content_security_policy"
 end
 
 # fix for: Set-Cookie (SameSite=Lax) doesn't work when within an iframe with host 127.0.0.1
