@@ -8,10 +8,12 @@ import {
   RiLoader4Line as LoaderIcon,
   RiPauseCircleFill as PauseIcon,
   RiPlayFill as PlayIcon,
-  RiRestartFill as ResetIcon,
   RiStopFill as StopButton,
-  RiSkipRightLine as StepThroughIcon,
 } from 'react-icons/ri';
+import {
+  VscDebugRestart as ResetIcon,
+  VscDebugStepOver as StepThroughIcon,
+} from 'react-icons/vsc';
 
 import { useHover, HoverProvider } from './context';
 import {
@@ -23,8 +25,7 @@ import {
 } from './data';
 import { Button, ErrorBoundary, IconButton, Timer } from './ui';
 import { cn, EMPTY_ARRAY, useElementSize } from './utils';
-
-const logoUrl = new URL('./logo.svg', import.meta.url).href;
+import { Logo } from './Logo';
 
 const StepRow: React.FC<{ step: Step; actions?: React.ReactNode }> = ({
   step,
@@ -214,7 +215,7 @@ const Steps_: React.FC = () => {
     });
   }, [steps]);
 
-  if (!steps) return <p>Loading...</p>;
+  if (!steps) return <p className="p-4 text-gray-600">Loading...</p>;
 
   const failedStepI = steps.findIndex((s) => s.status === 'failed');
 
@@ -297,9 +298,13 @@ const HistoryScreenshot: React.FC = () => {
 
   if (!step?.end_at) return null;
 
-  // FIXME: screenshots are too slow at the moment
+  // FIXME: taking screenshots is too slow at the moment...
   if (window)
-    return <p className="text-white p-4">Historical screenshots are WIP</p>;
+    return (
+      <p className="text-white p-4">
+        🚧 Historical snapshots are coming soon 🚧
+      </p>
+    );
 
   // TODO: this strategy breaks if you resize the window :)
   const imageSize = INITIAL_WINDOW_SIZE;
@@ -391,14 +396,7 @@ const Layout: React.FC<{
     <div className="h-screen flex flex-col items-stretch">
       <nav className="h-14 px-6 py-1 border-b border-gray-200 flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <img
-            src={logoUrl}
-            className={cn(
-              'w-10 h-10',
-              isRunning ? 'animate-spin' : 'animate-none',
-            )}
-            alt="Cyperful logo"
-          />
+          <Logo animating={isRunning} size={10} alt="Cyperful logo" />
           <h1 className="text-xl font-bold">
             <span style={{ color: BRAND_COLORS[0] }}>C</span>
             <span style={{ color: BRAND_COLORS[0] }}>y</span>
@@ -505,9 +503,9 @@ const Controls: React.FC = () => {
 
 const Page: React.FC = () => {
   return (
-    <HoverProvider>
-      <ErrorBoundary
-        fallback={(error) => (
+    <ErrorBoundary
+      fallback={(error) => {
+        return (
           <Layout>
             <div className="bg-gray-50 p-4 m-4 rounded shadow">
               <h2 className="text-lg font-bold mb-2 text-red-500">
@@ -516,13 +514,15 @@ const Page: React.FC = () => {
               <pre className="whitespace-pre-wrap">{error.toString()}</pre>
             </div>
           </Layout>
-        )}
-      >
+        );
+      }}
+    >
+      <HoverProvider>
         <Layout header={<Controls />} sidebar={<Steps />}>
           <ScenarioFrame />
         </Layout>
-      </ErrorBoundary>
-    </HoverProvider>
+      </HoverProvider>
+    </ErrorBoundary>
   );
 };
 

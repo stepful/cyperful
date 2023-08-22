@@ -100,12 +100,12 @@ export const useWebsocketData = <Data extends { event: string }>(
       update(null, data);
     });
 
-    websocketConnection.addEventListener('error', (evt) => {
-      update(new Error(`WebSocket error: ${evt.type}`));
+    websocketConnection.addEventListener('error', () => {
+      update(new Error(`WebSocket error. See console for details.`));
     });
 
     websocketConnection.addEventListener('close', () => {
-      update(new Error('WebSocket closed'));
+      update(new Error('WebSocket closed. Try restarting the server.'));
     });
   }, [url, eventType, update]);
 
