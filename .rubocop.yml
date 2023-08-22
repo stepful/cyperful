@@ -1,0 +1,76 @@
+require:
+  - standard
+
+inherit_gem:
+  standard: config/base.yml
+
+inherit_from:
+  - node_modules/@prettier/plugin-ruby/rubocop.yml
+
+AllCops:
+  inherit_mode:
+    override:
+      - Exclude
+  NewCops: enable
+  TargetRubyVersion: 3.2.1 # must match .ruby-version file
+
+Style/ClassAndModuleChildren:
+  Enabled: true
+  EnforcedStyle: compact
+Style/MethodCallWithArgsParentheses:
+  Enabled: true
+  EnforcedStyle: require_parentheses
+  AllowedMethods:
+    # debug print methods
+    - puts
+    - pp
+    - p
+    - warn
+    # Ruby kernel methods
+    - sleep
+    - raise
+    - yield
+    - require
+    - require_relative
+Style/AccessModifierDeclarations:
+  Enabled: true
+  EnforcedStyle: inline
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: never
+Style/AndOr:
+  Enabled: true
+  EnforcedStyle: always
+Style/ModuleFunction:
+  Enabled: true
+  EnforcedStyle: extend_self
+Style/RedundantSelf:
+  Enabled: false
+Style/TernaryParentheses:
+  Enabled: false
+Lint/AmbiguousOperator:
+  Enabled: false
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
+Lint/UnusedMethodArgument:
+  Enabled: true
+Lint/UnusedBlockArgument:
+  Enabled: true
+
+# The following rules must be disabled b/c `prettier` will override them anyway:
+Style/QuotedSymbols:
+  Enabled: false
+Style/StringLiteralsInInterpolation:
+  Enabled: false
+Style/StringLiterals:
+  Enabled: false
+Style/RescueStandardError:
+  Enabled: false
+Style/RegexpLiteral:
+  Enabled: false
+Style/HashSyntax:
+  Enabled: false
+Style/SingleLineMethods:
+  Enabled: false
+Style/EmptyMethod:
+  Enabled: false

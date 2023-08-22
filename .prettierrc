@@ -1,0 +1,7 @@
+{
+  "singleQuote": true,
+  "rubySingleQuote": false,
+  "rubyArrayLiteral": false,
+  "trailingComma": "all",
+  "plugins": ["@prettier/plugin-ruby"]
+}
