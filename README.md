@@ -48,8 +48,11 @@ end
 Then, run a test with `CYPERFUL` env var, e.g.:
 
 ```bash
-CYPERFUL=1 rails test test/system/my_test.rb
+CYPERFUL=1 rails test test/system/my_test.rb:123
 ```
+
+🚨 **IMPORTANT NOTE:**
+Cyperful currently works best when you run a single test at a time i.e. your test file contains only 1 test OR you specify a single test with `<filename>:<line_number>`. A better DX for running multiple sequential tests is coming soon.
 
 ## Development
 
