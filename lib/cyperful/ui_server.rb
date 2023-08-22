@@ -1,8 +1,8 @@
 require "webrick/websocket"
 
+# fix for: webrick-websocket incorrectly assumes `Upgrade` header is always present
 module FixWebrickWebsocketServer
   def service(req, res)
-    # fix for: webrick-websocket incorrectly assumes `Upgrade` header is always present
     req.header["upgrade"] = [""] if req["upgrade"].nil?
     super
   end
@@ -34,7 +34,7 @@ class Cyperful::UiServer
     @server =
       WEBrick::Websocket::HTTPServer.new(
         Port: @port,
-        DocumentRoot: File.expand_path("../../public", __dir__),
+        DocumentRoot: File.join(Cyperful::ROOT_DIR, "public"),
         Logger: WEBrick::Log.new("/dev/null"),
         AccessLog: [],
       )
@@ -53,7 +53,7 @@ class Cyperful::UiServer
           # at the moment it's not possible to have more than one client connected.
           # TODO: handle the client unexpectedly disconnecting e.g. user changes browser url
           if open_sockets.length > 0
-            warn "Warning: websockets already open: #{open_sockets}. You probably need to restart."
+            raise "websockets already open: #{open_sockets}. You probably need to restart."
           end
 
           sock_num = sock_num_counter
