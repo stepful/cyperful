@@ -1,13 +1,13 @@
 Gem::Specification.new do |s|
   s.name = "cyperful"
-  s.version = "0.1.1"
+  s.version = "0.1.2"
   s.summary = "Cypress-esque testing for Capybara tests"
   s.homepage = "https://github.com/stepful/cyperful"
   s.license = "MIT"
   s.authors = ["Wyatt Ades"]
   s.required_ruby_version = ">= 3"
 
-  s.files = Dir["lib/**/*.rb", "watcher.js", "public"]
+  s.files = Dir["lib/**/*.rb", "watcher.js", "public/**/*"]
 
   s.add_dependency("capybara", "~> 3")
   s.add_dependency("listen", "~> 3")

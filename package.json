@@ -6,7 +6,7 @@
     "dev": "vite",
     "watch": "vite build --watch",
     "build": "vite build",
-    "publish": "yarn build && gem build cyperful.gemspec && gem push *.gem && rm *.gem"
+    "publish-gem": "rm *.gem && yarn build && gem build cyperful.gemspec && gem push *.gem && rm *.gem"
   },
   "dependencies": {
     "@prettier/plugin-ruby": "^4.0.2",
