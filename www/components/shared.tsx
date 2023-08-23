@@ -1,6 +1,6 @@
-import React, { Component, useEffect, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
 
-import { cn } from './utils';
+import { cn } from 'lib/utils';
 
 /**
  * This file contains general-purpose UI components.
