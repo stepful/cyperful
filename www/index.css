@@ -8,19 +8,23 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-.Logo--animating g {
+.Logo g {
   transform-origin: 50% 50%;
   animation: rotate 5000ms linear infinite;
+  animation-play-state: paused;
 }
-.Logo--animating g:nth-child(1) {
+.Logo.Logo--animating g {
+  animation-play-state: running;
+}
+.Logo g:nth-child(1) {
   animation-duration: 2000ms;
 }
-.Logo--animating g:nth-child(2) {
+.Logo g:nth-child(2) {
+  animation-duration: 2500ms;
+}
+.Logo g:nth-child(3) {
   animation-duration: 3000ms;
 }
-.Logo--animating g:nth-child(3) {
-  animation-duration: 5000ms;
-}
-.Logo--animating g:nth-child(4) {
-  animation-duration: 7000ms;
+.Logo g:nth-child(4) {
+  animation-duration: 3500ms;
 }

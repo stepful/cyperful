@@ -301,18 +301,18 @@ class Cyperful::Driver
     @cyperful_origin = @ui_server.url_origin
 
     @ui_server.on_command do |command, params|
-      case command
-      when "start"
+      case command.to_sym
+      when :start
         # one of: integer (index of a step), true (pause at every step), or nil (don't pause)
         @pause_at_step = params["pause_at_step"]
 
         continue_next_step
-      when "reset"
+      when :reset
         @pause_at_step = true
         @step_pausing_queue.enq(:reset)
-      when "stop"
+      when :stop
         @pause_at_step = true # enable pausing
-      when "exit"
+      when :exit
         @pause_at_step = true
 
         # instead of calling `exit` directly, we need to raise a Cyperful::ExitCommand error
@@ -352,13 +352,13 @@ class Cyperful::Driver
     if error
       # get the 4 lines following the first line that includes the source file
       i = nil
-      backtrace =
-        error.backtrace.select do |s|
-          i ||= 0 if s.include?(@source_filepath)
-          i += 1 if i
-          break if i && i > 4
-          true
-        end
+      backtrace = []
+      error.backtrace.each do |s|
+        i ||= 0 if s.include?(@source_filepath)
+        i += 1 if i
+        break if i && i > 4
+        backtrace << s
+      end
 
       warn "\n\nTest failed with error:\n#{error.message}\n#{backtrace.join("\n")}"
     end
