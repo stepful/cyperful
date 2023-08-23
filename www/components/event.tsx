@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 
 import type { BrowserEvent } from 'lib/data';
 
+// TODO: render JSON and GraphQL requests/responses with syntax highlighting
 const safeStringify = (data: unknown) => {
   if (typeof data === 'string' || typeof data === 'number') return data;
 
