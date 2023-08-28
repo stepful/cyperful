@@ -1,6 +1,41 @@
 require "parser/current"
+require "capybara/minitest"
 
 class Cyperful::TestParser
+  # see docs for methods: https://www.rubydoc.info/github/jnicklas/capybara/Capybara/Session
+  @step_at_methods =
+    Capybara::Session::DSL_METHODS.to_set +
+      Capybara::Minitest::Assertions.instance_methods(false) -
+      # exclude methods that don't have side-effects i.e. don't modify the page:
+      %i[
+        body
+        html
+        source
+        current_url
+        current_host
+        current_path
+        current_scope
+        status_code
+        response_headers
+      ]
+
+  def self.step_at_methods
+    @step_at_methods
+  end
+  def self.add_step_at_methods(*mods_or_methods)
+    mods_or_methods.each do |mod_or_method|
+      case mod_or_method
+      when Module
+        @step_at_methods +=
+          mod_or_method.methods(false) + mod_or_method.instance_methods(false)
+      when String, Symbol
+        @step_at_methods << mod_or_method.to_sym
+      else
+        raise "Expected Module or Array of strings/symbols, got #{mod_or_method.class}"
+      end
+    end
+  end
+
   def initialize(test_class)
     @test_class = test_class
     @source_filepath = Object.const_source_location(test_class.name).first
@@ -24,14 +59,14 @@ class Cyperful::TestParser
     end
 
     (
-        # the children of the `class` node are either:
-        # - a `begin` node if there's more than 1 child node
-        # - or the one 0 or 1 child node
-        system_test_class
-          .children
-          .find { |node| node.type == :begin }
-          &.children || [system_test_class.children[2]].compact
-      )
+      # the children of the `class` node are either:
+      # - a `begin` node if there's more than 1 child node
+      # - or the one 0 or 1 child node
+      system_test_class
+        .children
+        .find { |node| node.type == :begin }
+        &.children || [system_test_class.children[2]].compact
+    )
       .map do |node|
         # e.g. `test "my test" do ... end`
         if node.type == :block && node.children[0].type == :send &&
@@ -50,29 +85,48 @@ class Cyperful::TestParser
       end
       .compact
       .to_h do |test_method, block_node|
-        [
-          test_method,
-          find_test_steps(block_node)
-            # sanity check:
-            .uniq { |step| step[:line] },
-        ]
+        out = []
+        block_node.children.each { |child| find_test_steps(child, out) }
+
+        [test_method, out]
       end
   end
 
-  private def find_test_steps(ast, out = [])
+  private def find_test_steps(ast, out = [], depth = 0)
     return out unless ast&.is_a?(Parser::AST::Node)
 
-    if ast.type == :send && Cyperful.step_at_methods.include?(ast.children[1])
-      out << {
-        method: ast.children[1],
-        line: ast.loc.line,
-        column: ast.loc.column,
-        as_string: ast.loc.expression.source,
-      }
+    if ast.type == :send
+      add_node(ast, out, depth)
+      ast.children.each { |child| find_test_steps(child, out, depth) }
+    elsif ast.type == :block
+      method, _args, child = ast.children
+
+      children = child.type == :begin ? child.children : [child]
+
+      if method.type == :send
+        depth += 1 if add_node(method, out, depth)
+        method.children.each { |child| find_test_steps(child, out, depth) }
+      end
+
+      children.each { |child| find_test_steps(child, out, depth) }
     end
 
-    ast.children.each { |child| find_test_steps(child, out) }
-
     out
+  end
+
+  private def add_node(node, out, depth)
+    unless Cyperful::TestParser.step_at_methods.include?(node.children[1])
+      return false
+    end
+
+    out << {
+      method: node.children[1],
+      line: node.loc.line,
+      column: node.loc.column,
+      as_string: node.loc.expression.source,
+      block_depth: depth,
+    }
+
+    true
   end
 end

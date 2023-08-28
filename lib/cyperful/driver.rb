@@ -74,6 +74,7 @@ class Cyperful::Driver
       )
     end
 
+    # NOTE: there can be multiple steps per line, this takes the last instance
     @step_per_line = @steps.index_by { |step| step[:line] }
 
     @current_step = nil

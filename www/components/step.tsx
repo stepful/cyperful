@@ -42,6 +42,11 @@ export const StepRow: React.FC<{ step: Step; actions?: React.ReactNode }> = ({
         <span className="text-gray-400 w-6 inline-block">
           {step.index + 1}.
         </span>
+        {Array.from({ length: step.block_depth }).map((_, i) => (
+          <span key={i} className="text-gray-400">
+            ↳
+          </span>
+        ))}
         <span className={cn('font-mono', textClass)}>{step.as_string}</span>
         {icon}
         {ms != null ? (

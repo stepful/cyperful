@@ -18,6 +18,7 @@ export type Step = {
   method: string;
   line: number;
   column: number;
+  block_depth: number;
   as_string: string;
   status: StepStatus;
   start_at: number | null; // ms

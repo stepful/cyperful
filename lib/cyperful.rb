@@ -29,23 +29,8 @@ module Cyperful
     @current&.teardown(error)
   end
 
-  # more potential methods: https://www.rubydoc.info/github/jnicklas/capybara/Capybara/Session
-  @step_at_methods = [*Capybara::Session::NODE_METHODS, :visit, :refresh]
-  def self.step_at_methods
-    @step_at_methods
-  end
   def self.add_step_at_methods(*mods_or_methods)
-    mods_or_methods.each do |mod_or_method|
-      case mod_or_method
-      when Module
-        @step_at_methods +=
-          mod_or_method.methods(false) + mod_or_method.instance_methods(false)
-      when String, Symbol
-        @step_at_methods << mod_or_method.to_sym
-      else
-        raise "Expected Module or Array of strings/symbols, got #{mod_or_method.class}"
-      end
-    end
+    Cyperful::TestParser.add_step_at_methods(*mods_or_methods)
   end
 end
 
