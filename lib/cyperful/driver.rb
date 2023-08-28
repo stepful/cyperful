@@ -236,10 +236,25 @@ class Cyperful::Driver
   def drive_iframe
     puts "Driving iframe..."
 
-    @session.switch_to_frame(
-      @session.find(:css, "iframe#scenario-frame"), # waits for the iframe to load
-    )
+    # make sure a `within` block doesn't affect these commands
+    without_finder_scopes do
+      @session.switch_to_frame(
+        # `find` waits for the iframe to load
+        @session.find(:css, "iframe#scenario-frame"),
+      )
+    end
+
     @driving_iframe = true
+  end
+
+  private def without_finder_scopes(&block)
+    scopes = @session.send(:scopes)
+    before_scopes = scopes.dup
+    scopes.reject! { |el| el.is_a?(Capybara::Node::Element) }
+    block.call
+  ensure
+    scopes.clear
+    scopes.push(*before_scopes)
   end
 
   # forked from: https://github.com/teamcapybara/capybara/blob/master/lib/capybara/session.rb#L264

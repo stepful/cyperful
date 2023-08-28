@@ -25,6 +25,16 @@ module PrependCapybaraSession
 end
 Capybara::Session.prepend(PrependCapybaraSession)
 
+module PrependCapybaraWindow
+  # this solves a bug in Capybara where it doesn't
+  # return to driving the iframe after a call to `Window#close`
+  def close
+    super
+    Cyperful.current&.drive_iframe
+  end
+end
+Capybara::Window.prepend(PrependCapybaraWindow)
+
 # The Minitest test helper.
 # TODO: support other test frameworks like RSpec
 module Cyperful::SystemTestHelper
