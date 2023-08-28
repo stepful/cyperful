@@ -17,14 +17,14 @@
   animation-play-state: running;
 }
 .Logo g:nth-child(1) {
-  animation-duration: 2000ms;
+  animation-duration: 1000ms;
 }
 .Logo g:nth-child(2) {
-  animation-duration: 2500ms;
+  animation-duration: 1500ms;
 }
 .Logo g:nth-child(3) {
   animation-duration: 3000ms;
 }
 .Logo g:nth-child(4) {
-  animation-duration: 3500ms;
+  animation-duration: 4000ms;
 }
