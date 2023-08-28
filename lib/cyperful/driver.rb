@@ -111,21 +111,22 @@ class Cyperful::Driver
     @tracepoint.enable
   end
 
-  # Every time a file changes the `test/` directory,
-  # reset this test
-  # TODO: add an option to auto-run
+  # Every time a file changes the `test/` directory, reset this test
+  # TODO: add an option to auto-run on reload
   def setup_file_listener
-    test_dir = @source_filepath.match(%r{^/.+/(?:test|spec)\b})[0]
+    # TODO: we need to somehow reload the source files
 
-    @file_listener&.stop
-    @file_listener =
-      Listen.to(test_dir) do |_modified, _added, _removed|
-        puts "Test files changed, resetting test..."
+    # test_dir = @source_filepath.match(%r{^/.+/(?:test|spec)\b})[0]
 
-        @pause_at_step = true
-        @step_pausing_queue.enq(:reset)
-      end
-    @file_listener.start
+    # @file_listener&.stop
+    # @file_listener =
+    #   Listen.to(test_dir) do |_modified, _added, _removed|
+    #     puts "Test files changed, resetting test..."
+
+    #     @pause_at_step = true
+    #     @step_pausing_queue.enq(:reset)
+    #   end
+    # @file_listener.start
   end
 
   def print_steps

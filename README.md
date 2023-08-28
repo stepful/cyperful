@@ -7,7 +7,7 @@ An addon for Ruby Capybara system tests that adds some of the DX capabilities of
 - [x] View the list of steps in a test, with live updates as the test runs
 - [x] Pause the test at each step and interact with the page
 - [x] View API requests and console logs between steps
-- [x] Reset the test when the source code is modified
+- [ ] Reset the test when the source code is modified
 - [ ] Take a screenshot at each step so you can view the test at that point in time
 - [ ] View and run ANY test suite from the UI
 
