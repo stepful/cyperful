@@ -149,7 +149,7 @@ class Cyperful::Driver
     "running"
   end
 
-  def test_duration_ms
+  private def test_duration_ms
     start_at = @steps.first&.[](:start_at)
     return nil unless start_at
     last_ended_step_i = @steps.rindex { |step| step[:end_at] }
@@ -268,8 +268,17 @@ class Cyperful::Driver
 
   WATCHER_JS = File.read(File.join(Cyperful::ROOT_DIR, "watcher.js"))
 
+  private def skip_multi_sessions
+    unless Capybara.current_session == @session
+      warn "Skipped Cyperful setup in non-default session: #{Capybara.session_name}"
+      return true
+    end
+    false
+  end
+
   def internal_visit(url)
     return false unless @driving_iframe
+    return false if skip_multi_sessions
 
     abs_url, display_url = make_absolute_url(url)
 
@@ -291,6 +300,7 @@ class Cyperful::Driver
 
   def internal_current_url
     return nil unless @driving_iframe
+    return nil if skip_multi_sessions
 
     @session.evaluate_script("window.location.href")
   end
@@ -352,9 +362,10 @@ class Cyperful::Driver
       backtrace = []
       error.backtrace.each do |s|
         i ||= 0 if s.include?(@source_filepath)
-        i += 1 if i
-        break if i && i > 4
+        next unless i
+        i += 1
         backtrace << s
+        break if i >= 6
       end
 
       warn "\n\nTest failed with error:\n#{error.message}\n#{backtrace.join("\n")}"

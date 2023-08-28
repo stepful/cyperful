@@ -17,6 +17,11 @@ module PrependCapybaraSession
     return if Cyperful.current&.internal_visit(current_url)
     super
   end
+
+  def go_back
+    super
+    Cyperful.current&.drive_iframe
+  end
 end
 Capybara::Session.prepend(PrependCapybaraSession)
 
