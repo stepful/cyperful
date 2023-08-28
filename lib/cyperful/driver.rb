@@ -114,7 +114,7 @@ class Cyperful::Driver
   # reset this test
   # TODO: add an option to auto-run
   def setup_file_listener
-    test_dir = @source_filepath.match(%r{^/.+/(test|spec)\b})[0]
+    test_dir = @source_filepath.match(%r{^/.+/(?:test|spec)\b})[0]
 
     @file_listener&.stop
     @file_listener =
@@ -335,9 +335,6 @@ class Cyperful::Driver
     @tracepoint&.disable
     @tracepoint = nil
 
-    @file_listener&.stop
-    @file_listener = nil
-
     if error&.is_a?(Cyperful::ResetCommand)
       puts "\nPlease ignore the error, we're just resetting the test ;)"
 
@@ -372,5 +369,8 @@ class Cyperful::Driver
     puts "Cyperful teardown complete. Waiting for command..."
     command = @step_pausing_queue.deq
     queue_reset if command == :reset
+  ensure
+    @file_listener&.stop
+    @file_listener = nil
   end
 end
