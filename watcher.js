@@ -3,7 +3,7 @@
 
   log('Cyperful watcher loading...');
 
-  const CYPERFUL_ORIGIN = 'http://localhost:3004';
+  const { CYPERFUL_ORIGIN } = __CYPERFUL_CONFIG__;
 
   let idCounter = 0;
   const notify = (type, data, startEvent = null) => {

@@ -63,7 +63,7 @@ end
 # TODO: use Rack middleware instead to support non-Rails apps
 if defined?(Rails)
   Rails.application.config.content_security_policy do |policy|
-    policy.frame_ancestors(:self, "localhost:3004")
+    policy.frame_ancestors(:self, "localhost:#{Cyperful.config.port}")
   end
 else
   warn "Cyperful: Rails not detected, skipping content_security_policy fix.\nThe Cyperful UI may not work correctly."

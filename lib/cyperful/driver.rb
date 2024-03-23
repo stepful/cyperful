@@ -285,7 +285,15 @@ class Cyperful::Driver
     [abs_url, display_url]
   end
 
-  WATCHER_JS = File.read(File.join(Cyperful::ROOT_DIR, "watcher.js"))
+  def self.load_watcher_js
+    return @watcher_js if defined?(@watcher_js)
+
+    @watcher_js =
+      File.read(File.join(Cyperful::ROOT_DIR, "watcher.js")).sub(
+        "__CYPERFUL_CONFIG__",
+        { CYPERFUL_ORIGIN: "http://localhost:#{Cyperful.config.port}" }.to_json,
+      )
+  end
 
   private def skip_multi_sessions
     unless Capybara.current_session == @session
@@ -312,7 +320,7 @@ class Cyperful::Driver
     # inject the watcher script into the page being tested.
     # this script will notify the Cyperful UI for events like:
     # console logs, network requests, client navigations, errors, etc.
-    @session.execute_script(WATCHER_JS) # ~9ms empirically
+    @session.execute_script(Cyperful::Driver.load_watcher_js) # ~9ms empirically
 
     true
   end
@@ -325,7 +333,7 @@ class Cyperful::Driver
   end
 
   def setup_api_server
-    @ui_server = Cyperful::UiServer.new(port: 3004)
+    @ui_server = Cyperful::UiServer.new(port: Cyperful.config.port)
 
     @cyperful_origin = @ui_server.url_origin
 

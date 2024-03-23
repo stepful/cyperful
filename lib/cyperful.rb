@@ -6,6 +6,15 @@ module Cyperful
 
   @current = nil
 
+  class Config < Struct.new(:port, keyword_init: true)
+    def initialize
+      super(port: 3004)
+    end
+  end
+  def self.config
+    @config ||= Config.new
+  end
+
   def self.current
     @current
   end

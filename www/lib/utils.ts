@@ -59,13 +59,14 @@ export const useElementSize = () => {
   return [size, ref] as const;
 };
 
-// NOTE: we're never closing the connection
-let websocketConnection: WebSocket | undefined;
+const websocketConnections = new Map<string, WebSocket>();
 
 export const useWebsocketData = <Data extends { event: string }>(
   eventType: Data['event'],
   url: string,
   onError?: (err: Error) => void,
+  /** Don't close the connection on unmount */
+  keepOpen = true,
 ) => {
   const [res, setRes] = useState<{ data?: Data; error?: Error }>({});
 
@@ -78,11 +79,13 @@ export const useWebsocketData = <Data extends { event: string }>(
   }, []);
 
   useEffect(() => {
+    let websocketConnection = websocketConnections.get(url);
     if (!websocketConnection) {
       try {
         const websocketUrl = new URL(url, window.location.href);
         websocketUrl.protocol = 'ws:';
         websocketConnection = new WebSocket(websocketUrl.href);
+        websocketConnections.set(url, websocketConnection);
       } catch (err) {
         update(err as Error);
         return;
@@ -107,6 +110,13 @@ export const useWebsocketData = <Data extends { event: string }>(
     websocketConnection.addEventListener('close', () => {
       update(new Error('WebSocket closed. Try restarting the server.'));
     });
+
+    return () => {
+      if (!keepOpen) {
+        websocketConnection?.close();
+        websocketConnections.delete(url);
+      }
+    };
   }, [url, eventType, update]);
 
   return res;
