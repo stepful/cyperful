@@ -1,24 +1,24 @@
-import { Component, useEffect, useState } from 'react';
+import { Component, useEffect, useState } from "react";
 
-import { cn } from 'lib/utils';
+import { cn } from "~/lib/utils";
 
 /**
  * This file contains general-purpose UI components.
  */
 
 const BUTTON_COLORS = {
-  gray: 'text-black bg-gray-200 hover:bg-gray-300',
-  green: 'text-white bg-green-500 hover:bg-green-600',
-  blue: 'text-white bg-blue-500 hover:bg-blue-600',
-  red: 'text-white bg-red-500 hover:bg-red-600',
-  orange: 'text-white bg-orange-400 hover:bg-orange-500',
-  yellow: 'text-white bg-yellow-500 hover:bg-yellow-600',
+  gray: "text-black bg-gray-200 hover:bg-gray-300",
+  green: "text-white bg-green-500 hover:bg-green-600",
+  blue: "text-white bg-blue-500 hover:bg-blue-600",
+  red: "text-white bg-red-500 hover:bg-red-600",
+  orange: "text-white bg-orange-400 hover:bg-orange-500",
+  yellow: "text-white bg-yellow-500 hover:bg-yellow-600",
 };
 
 const BUTTON_SIZES = {
-  sm: 'text-sm h-7',
-  md: 'text-base h-8',
-  lg: 'text-lg h-10',
+  sm: "text-sm h-7",
+  md: "text-base h-8",
+  lg: "text-lg h-10",
 };
 
 type ButtonProps = {
@@ -26,22 +26,22 @@ type ButtonProps = {
   className?: string;
   children: React.ReactNode;
   colorScheme?: keyof typeof BUTTON_COLORS;
-  'aria-label'?: string;
+  "aria-label"?: string;
   size?: keyof typeof BUTTON_SIZES;
 };
 
 export const Button: React.FC<ButtonProps> = ({
   children,
   className,
-  colorScheme = 'gray',
-  size = 'md',
+  colorScheme = "gray",
+  size = "md",
   ...rest
 }) => {
   return (
     <button
       type="button"
       className={cn(
-        'font-semibold py-1 px-3 rounded whitespace-nowrap inline-flex items-center',
+        "font-semibold py-1 px-3 rounded whitespace-nowrap inline-flex items-center",
         BUTTON_COLORS[colorScheme],
         BUTTON_SIZES[size],
         className,
@@ -54,9 +54,9 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 export const IconButton: React.FC<
-  Omit<ButtonProps, 'children'> & {
+  Omit<ButtonProps, "children"> & {
     icon: React.ReactNode;
-    'aria-label': string;
+    "aria-label": string;
   }
 > = ({ icon, ...props }) => {
   return (
@@ -89,7 +89,7 @@ export const Timer: React.FC<{
   if (elapsed == null) return <>00.00</>;
 
   let seconds = (elapsed / 1000).toFixed(2);
-  if (seconds.length < 5) seconds = '0' + seconds;
+  if (seconds.length < 5) seconds = "0" + seconds;
 
   return <>{seconds}</>;
 };

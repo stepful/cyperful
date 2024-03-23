@@ -1,12 +1,12 @@
-import { findLastIndex } from 'lodash-es';
-import { Fragment, memo, useEffect } from 'react';
+import { findLastIndex } from "lodash-es";
+import { Fragment, memo, useEffect } from "react";
 
-import { EventRow } from 'components/event';
-import { GoToHereIcon } from 'components/icons';
-import { Button } from 'components/shared';
-import { StepRow } from 'components/step';
-import { sendCommand, useBrowserEvents, useStepsData } from 'lib/data';
-import { EMPTY_ARRAY } from 'lib/utils';
+import { EventRow } from "~/components/event";
+import { GoToHereIcon } from "~/components/icons";
+import { Button } from "~/components/shared";
+import { StepRow } from "~/components/step";
+import { sendCommand, useBrowserEvents, useStepsData } from "~/lib/data";
+import { EMPTY_ARRAY } from "~/lib/utils";
 
 const Steps_: React.FC = () => {
   const {
@@ -23,11 +23,11 @@ const Steps_: React.FC = () => {
   // scroll to last updated step
   useEffect(() => {
     if (!steps?.length) return;
-    if (steps[0].status === 'pending') return; // tests haven't started yet
+    if (steps[0].status === "pending") return; // tests haven't started yet
 
     let lastNonPendingStepIndex = findLastIndex(
       steps,
-      (s) => s.status !== 'pending',
+      (s) => s.status !== "pending",
     );
     if (lastNonPendingStepIndex === -1)
       lastNonPendingStepIndex = steps.length - 1;
@@ -38,14 +38,14 @@ const Steps_: React.FC = () => {
     if (!element) return;
 
     element.scrollIntoView({
-      behavior: 'auto',
-      block: 'center',
+      behavior: "auto",
+      block: "center",
     });
   }, [steps]);
 
   if (!steps) return <p className="p-4 text-gray-600">Loading...</p>;
 
-  const failedStepI = steps.findIndex((s) => s.status === 'failed');
+  const failedStepI = steps.findIndex((s) => s.status === "failed");
 
   return (
     <div className="bg-gray-50 flex-1">
@@ -85,12 +85,12 @@ const Steps_: React.FC = () => {
                 step={step}
                 actions={
                   <>
-                    {(test_status === 'paused' || test_status === 'pending') &&
+                    {(test_status === "paused" || test_status === "pending") &&
                     (current_step_index == null ||
                       step.index > current_step_index) ? (
                       <Button
                         onClick={() => {
-                          sendCommand('start', { pause_at_step: step.index });
+                          sendCommand("start", { pause_at_step: step.index });
                         }}
                         className="mr-2"
                         size="sm"

@@ -16,10 +16,10 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "baseUrl": ".",
     "types": ["./www/types"],
+    "baseUrl": ".",
     "paths": {
-      "*": ["./www/*", "./node_modules/*"]
+      "~/*": ["./www/*"]
     }
   },
   "exclude": ["node_modules"]

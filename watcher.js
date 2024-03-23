@@ -61,6 +61,14 @@
     notify('unhandledrejection', { message: event.reason.toString() });
   });
 
+  function tryParseJson(str) {
+    try {
+      return JSON.parse(str);
+    } catch (_err) {
+      return str;
+    }
+  }
+
   // capture XHR network requests
   const OriginalXHR = window.XMLHttpRequest;
   function XHR() {
@@ -93,15 +101,22 @@
       typeof args[0] === 'string' ? args : [args[0].url, args[0]];
     const method = options?.method ?? 'GET';
     const body = options?.body;
+    const bodyType =
+      options.headers?.['content-type'] ||
+      options.headers?.['Content-Type'] ||
+      null;
+    const parsedBody =
+      body instanceof FormData
+        ? formDataToObject(body)
+        : bodyType?.includes('application/json')
+          ? tryParseJson(body)
+          : body;
 
     const start = notify('fetch', {
       method,
       url,
-      body,
-      bodyType:
-        options.headers?.['content-type'] ||
-        options.headers?.['Content-Type'] ||
-        null,
+      body: parsedBody,
+      bodyType,
     });
 
     const promise = originalFetch(...args);

@@ -1,14 +1,14 @@
-import LogoSvg from '../logo.svg?react';
-import clsx from 'clsx';
+import clsx from "clsx";
+import LogoSvg from "~/logo.svg?react";
 
 export const Logo: React.FC<{
   alt?: string;
   size?: number;
   animating?: boolean;
-}> = ({ alt = 'Cyperful', size = 10, animating = false }) => {
+}> = ({ alt = "Cyperful", size = 10, animating = false }) => {
   return (
     <LogoSvg
-      className={clsx('Logo', animating && 'Logo--animating')}
+      className={clsx("Logo", animating && "Logo--animating")}
       style={{
         width: `${size / 4}rem`,
         height: `${size / 4}rem`,
@@ -18,7 +18,7 @@ export const Logo: React.FC<{
   );
 };
 
-export const BRAND_COLORS = ['#E92727', '#EE7823', '#FFCF00', '#009154'];
+export const BRAND_COLORS = ["#E92727", "#EE7823", "#FFCF00", "#009154"];
 
 export const LogoText = () => {
   return (

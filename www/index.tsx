@@ -1,18 +1,20 @@
-import { memo, useState } from 'react';
-import ReactDOM from 'react-dom/client';
-
-import { Logo, LogoText } from 'components/Logo';
-import { Controls } from 'components/controls';
-import { ErrorBoundary } from 'components/shared';
-import { Steps } from 'components/steps';
-import { HoverProvider, useHover } from 'lib/context';
-import { useStepsData } from 'lib/data';
-import { cn, useElementSize } from 'lib/utils';
+import { memo, useState } from "react";
+import ReactDOM from "react-dom/client";
+import { Logo, LogoText } from "~/components/Logo";
+import { Controls } from "~/components/controls";
+import { ErrorBoundary } from "~/components/shared";
+import { Steps } from "~/components/steps";
+import { HoverProvider, useHover } from "~/lib/context";
+import { useStepsData } from "~/lib/data";
+import { cn } from "~/lib/utils";
+import { useElementSize } from "~/lib/utils/useElementSize";
 
 const INITIAL_WINDOW_SIZE = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
+
+const SCREENSHOTS_ENABLED = false;
 
 const HistoryScreenshot: React.FC = () => {
   const { step } = useHover();
@@ -20,7 +22,7 @@ const HistoryScreenshot: React.FC = () => {
   if (!step?.end_at) return null;
 
   // FIXME: taking screenshots is too slow at the moment...
-  if (window)
+  if (!SCREENSHOTS_ENABLED)
     return (
       <p className="text-white p-4">
         🚧 Historical snapshots are coming soon 🚧
@@ -29,7 +31,7 @@ const HistoryScreenshot: React.FC = () => {
 
   // TODO: this strategy breaks if you resize the window :)
   const imageSize = INITIAL_WINDOW_SIZE;
-  const scenarioContainer = document.getElementById('scenario-container')!;
+  const scenarioContainer = document.getElementById("scenario-container")!;
   const { x, y, width } = scenarioContainer.getBoundingClientRect();
   const scale = width / imageSize.width;
 
@@ -40,7 +42,7 @@ const HistoryScreenshot: React.FC = () => {
         width={imageSize.width}
         height={imageSize.height}
         style={{
-          transformOrigin: 'top left',
+          transformOrigin: "top left",
           transform: `scale(${1 / scale}) translate(${-x * scale}px, ${
             -y * scale
           }px)`,
@@ -51,8 +53,7 @@ const HistoryScreenshot: React.FC = () => {
   );
 };
 
-// using `memo` to make sure we never re-render the iframe
-const ScenarioFrame = memo(() => {
+const ScenarioFrame_ = () => {
   // TODO: make configurable
   const [_desiredSize] = useState(INITIAL_WINDOW_SIZE);
 
@@ -67,10 +68,10 @@ const ScenarioFrame = memo(() => {
         className="absolute top-0 left-0 w-full h-full opacity-50"
         style={{
           // gray stripes
-          backgroundColor: '#9ca3af1a',
+          backgroundColor: "#9ca3af1a",
           backgroundImage:
-            'linear-gradient(135deg,#6b728080 10%,#0000 0,#0000 50%,#6b728080 0,#6b728080 60%,#0000 0,#0000)',
-          backgroundSize: '7.07px 7.07px',
+            "linear-gradient(135deg,#6b728080 10%,#0000 0,#0000 50%,#6b728080 0,#6b728080 60%,#0000 0,#0000)",
+          backgroundSize: "7.07px 7.07px",
         }}
       />
 
@@ -84,7 +85,7 @@ const ScenarioFrame = memo(() => {
             // NOTE: the `src` attribute is set by Capybara
             id="scenario-frame"
             title="scenario"
-            className={cn('absolute top-0 left-0', isAnyHovered && 'opacity-0')}
+            className={cn("absolute top-0 left-0", isAnyHovered && "opacity-0")}
             style={{
               width: containerSize.width,
               height: containerSize.height,
@@ -101,7 +102,9 @@ const ScenarioFrame = memo(() => {
       </div>
     </div>
   );
-});
+};
+// using `memo` to make sure we never re-render the iframe
+const ScenarioFrame = memo(ScenarioFrame_);
 
 const Layout: React.FC<{
   header?: React.ReactNode;
@@ -109,7 +112,7 @@ const Layout: React.FC<{
   children: React.ReactNode;
 }> = ({ header, sidebar, children }) => {
   const status = useStepsData()?.test_status;
-  const isRunning = status === 'running';
+  const isRunning = status === "running";
 
   return (
     <div className="h-screen flex flex-col items-stretch">
@@ -127,7 +130,7 @@ const Layout: React.FC<{
           <div
             className="basis-96 flex flex-col items-stretch overflow-y-auto"
             style={{
-              maxHeight: 'calc(100vh - 3.5rem)',
+              maxHeight: "calc(100vh - 3.5rem)",
             }}
           >
             {sidebar}
@@ -165,4 +168,4 @@ const Page: React.FC = () => {
   );
 };
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<Page />);
+ReactDOM.createRoot(document.getElementById("root")!).render(<Page />);

@@ -1,63 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-/** Easily combine and override tailwind classes */
-export const cn = (...inputs: ClassValue[]) => {
-  return twMerge(clsx(inputs));
-};
-
-export const request = async <T>(
-  url: string,
-  method = 'GET',
-  data?: Record<string, unknown>,
-) => {
-  const res = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: data != null ? JSON.stringify(data) : undefined,
-  });
-  const json = res.headers.get('content-type')?.includes('application/json')
-    ? await res.json()
-    : undefined;
-  if (!res.ok)
-    throw new Error(
-      `Request error: ${method} ${url} - ${res.status} ${res.statusText}`,
-    );
-  return json as T;
-};
-
-export const useElementSize = () => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const [size, setSize] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    const observer = new ResizeObserver(() => {
-      if (!ref.current) return;
-      setSize({
-        width: ref.current.offsetWidth,
-        height: ref.current.offsetHeight,
-      });
-    });
-
-    observer.observe(ref.current);
-
-    setSize({
-      width: ref.current.offsetWidth,
-      height: ref.current.offsetHeight,
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  return [size, ref] as const;
-};
 
 const websocketConnections = new Map<string, WebSocket>();
 
@@ -121,5 +62,3 @@ export const useWebsocketData = <Data extends { event: string }>(
 
   return res;
 };
-
-export const EMPTY_ARRAY: never[] = [];

@@ -6,8 +6,8 @@ export {
   RiPauseCircleFill as PauseIcon,
   RiPlayFill as PlayIcon,
   RiStopFill as StopIcon,
-} from 'react-icons/ri';
+} from "react-icons/ri";
 export {
   VscDebugRestart as ResetIcon,
   VscDebugStepOver as StepThroughIcon,
-} from 'react-icons/vsc';
+} from "react-icons/vsc";

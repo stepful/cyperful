@@ -1,49 +1,66 @@
-import { Fragment } from 'react';
-
-import type { BrowserEvent } from 'lib/data';
-
-// TODO: render JSON and GraphQL requests/responses with syntax highlighting
-const safeStringify = (data: unknown) => {
-  if (typeof data === 'string' || typeof data === 'number') return data;
-
-  try {
-    return JSON.stringify(data, null, 2);
-  } catch {
-    return '<unserializable data>';
-  }
-};
+import { Fragment } from "react";
+import {
+  inspectRequestBody,
+  safeStringify,
+  SyntaxHighlight,
+} from "~/components/syntax-highlighter";
+import type { BrowserEvent } from "~/lib/data";
 
 const eventContent = (event: BrowserEvent): React.ReactNode => {
   const { type, data } = event;
-  if (type === 'log') {
+  if (type === "log") {
     const { args, level } = data;
     return (
-      <p className={level === 'error' ? 'text-red-500' : ''}>
+      <p className={level === "error" ? "text-red-500" : ""}>
         {args.map((arg, i) => (
           <Fragment key={i}>
-            {i > 0 ? ' ' : null}
-            {typeof arg === 'string' ? arg : safeStringify(arg)}
+            {i > 0 ? " " : null}
+            {typeof arg === "string" ? arg : safeStringify(arg)}
           </Fragment>
         ))}
       </p>
     );
-  } else if (type === 'fetch' || type === 'xhr') {
+  } else if (type === "fetch" || type === "xhr") {
     const { url, method, status, body, response } = data;
+
+    const { graphqlQuery, strippedBody } = inspectRequestBody(url, body);
+
     return (
       <>
         <p className="mb-1">
-          {method} {url} {status}
+          <span className="text-gray-400">{method}</span>{" "}
+          <span className="text-gray-500">{url}</span>{" "}
+          <span className="text-gray-400">{status}</span>
         </p>
 
-        {body != null ? (
+        {graphqlQuery ? (
+          <div className="relative border-t border-gray-200">
+            <span className="absolute top-0 right-0 text-xs bg-gray-100 text-gray-500">
+              GraphQL Query
+            </span>
+
+            <SyntaxHighlight
+              className="max-h-16"
+              content={graphqlQuery}
+              type="graphql"
+            />
+          </div>
+        ) : null}
+        {strippedBody != null ? (
           <div className="relative border-t border-gray-200">
             <span className="absolute top-0 right-0 text-xs bg-gray-100 text-gray-500">
               Request Body
             </span>
 
-            <pre className="whitespace-pre-wrap max-h-16 overflow-y-auto">
-              {safeStringify(body)}
-            </pre>
+            <SyntaxHighlight
+              className="max-h-16"
+              content={strippedBody}
+              type={
+                strippedBody != null && typeof strippedBody === "object"
+                  ? "json"
+                  : null
+              }
+            />
           </div>
         ) : null}
         {response != null ? (
@@ -51,26 +68,30 @@ const eventContent = (event: BrowserEvent): React.ReactNode => {
             <span className="absolute top-0 right-0 text-xs bg-gray-100 text-gray-500">
               Response Body
             </span>
-            <pre className="whitespace-pre-wrap max-h-16 overflow-y-auto">
-              {safeStringify(response)}
-            </pre>
+            <SyntaxHighlight
+              className="max-h-16"
+              content={response}
+              type={
+                response != null && typeof response === "object" ? "json" : null
+              }
+            />
           </div>
         ) : null}
       </>
     );
-  } else if (type === 'global_error' || type === 'unhandledrejection') {
+  } else if (type === "global_error" || type === "unhandledrejection") {
     const { message } = data;
     return (
       <pre className="text-red-500 whitespace-pre-wrap max-h-16 overflow-y-auto">
         {message}
       </pre>
     );
-  } else if (type === 'client_navigate') {
+  } else if (type === "client_navigate") {
     const { url, replace } = data;
     return (
       <p>
         {url}
-        {replace ? ' (replace)' : null}
+        {replace ? " (replace)" : null}
       </p>
     );
   }

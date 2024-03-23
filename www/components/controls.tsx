@@ -3,10 +3,10 @@ import {
   ResetIcon,
   StepThroughIcon,
   StopIcon,
-} from 'components/icons';
-import { Button, IconButton, Timer } from 'components/shared';
-import { sendCommand, useStepsData } from 'lib/data';
-import { cn } from 'lib/utils';
+} from "~/components/icons";
+import { Button, IconButton, Timer } from "~/components/shared";
+import { sendCommand, useStepsData } from "~/lib/data";
+import { cn } from "~/lib/utils";
 
 export const Controls: React.FC = () => {
   const {
@@ -20,22 +20,22 @@ export const Controls: React.FC = () => {
       <span className="font-mono text-gray-500 text-lg bg-gray-100 rounded-md py-1 px-3 shadow-inner">
         <Timer
           givenElapsedMs={test_duration_ms ?? null}
-          paused={status !== 'running'}
+          paused={status !== "running"}
         />
       </span>
 
-      {(status === 'pending' || status === 'paused') && (
+      {(status === "pending" || status === "paused") && (
         <IconButton
-          onClick={() => sendCommand('start')}
+          onClick={() => sendCommand("start")}
           colorScheme="green"
-          aria-label={status === 'pending' ? 'Start' : 'Resume'}
+          aria-label={status === "pending" ? "Start" : "Resume"}
           icon={<PlayIcon />}
         />
       )}
-      {(status === 'pending' || status === 'paused') && (
+      {(status === "pending" || status === "paused") && (
         <IconButton
           onClick={() =>
-            sendCommand('start', {
+            sendCommand("start", {
               pause_at_step: (current_step_index ?? -1) + 1,
             })
           }
@@ -44,20 +44,20 @@ export const Controls: React.FC = () => {
           aria-label="Step Through"
         />
       )}
-      {status === 'running' && (
+      {status === "running" && (
         <IconButton
-          onClick={() => sendCommand('stop')}
+          onClick={() => sendCommand("stop")}
           colorScheme="red"
           icon={<StopIcon />}
           aria-label="Stop"
         />
       )}
-      {(status === 'passed' || status === 'failed') && (
+      {(status === "passed" || status === "failed") && (
         <>
           <span
             className={cn(
-              'text-md capitalize rounded-full text-white px-3 py-1',
-              status === 'passed' ? 'bg-green-500' : 'bg-red-500',
+              "text-md capitalize rounded-full text-white px-3 py-1",
+              status === "passed" ? "bg-green-500" : "bg-red-500",
             )}
           >
             Test {status}
@@ -65,9 +65,9 @@ export const Controls: React.FC = () => {
         </>
       )}
 
-      {status !== 'pending' && status !== 'running' ? (
+      {status !== "pending" && status !== "running" ? (
         <IconButton
-          onClick={() => sendCommand('reset')}
+          onClick={() => sendCommand("reset")}
           colorScheme="red"
           icon={<ResetIcon />}
           aria-label="Reset"
@@ -76,7 +76,7 @@ export const Controls: React.FC = () => {
 
       <div className="flex-1" />
 
-      <Button onClick={() => sendCommand('exit')}>Exit</Button>
+      <Button onClick={() => sendCommand("exit")}>Exit</Button>
     </>
   );
 };

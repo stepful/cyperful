@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
-
-import { EMPTY_ARRAY, request, useWebsocketData } from './utils';
+import { useEffect, useState } from "react";
+import { request } from "~/lib/request";
+import { EMPTY_ARRAY } from "~/lib/utils";
+import { useWebsocketData } from "~/lib/utils/websocket";
 
 const STATUS_MAP = {
-  pending: { colorClass: 'text-gray-500' },
-  paused: { colorClass: 'text-yellow-500' },
-  running: { colorClass: 'text-blue-500' },
-  passed: { colorClass: 'text-green-500' },
-  failed: { colorClass: 'text-red-500' },
+  pending: { colorClass: "text-gray-500" },
+  paused: { colorClass: "text-yellow-500" },
+  running: { colorClass: "text-blue-500" },
+  passed: { colorClass: "text-green-500" },
+  failed: { colorClass: "text-red-500" },
 };
 
 type StepStatus = keyof typeof STATUS_MAP;
@@ -28,7 +29,7 @@ export type Step = {
 };
 
 type StepsData = {
-  event: 'steps_updated';
+  event: "steps_updated";
   steps: Step[];
   current_step_index: number | null;
   pause_at_step: number | true | null;
@@ -52,20 +53,20 @@ export const sendCommand = async <Command extends keyof Commands>(
   command: Command,
   params: Commands[Command] = {} as Commands[Command],
 ) => {
-  await request('/api/steps/command', 'POST', { command, params });
+  await request("/api/steps/command", "POST", { command, params });
 };
 
 export const useStepsData = () => {
   const { data, error } = useWebsocketData<StepsData>(
-    'steps_updated',
-    '/api/websocket',
+    "steps_updated",
+    "/api/websocket",
   );
 
   if (error) throw error;
 
   if (!data) return null; // loading
 
-  if (!data.steps.length) throw new Error('No steps!');
+  if (!data.steps.length) throw new Error("No steps!");
 
   return data;
 };
@@ -73,7 +74,7 @@ export const useStepsData = () => {
 type Payloads = {
   log: {
     args: unknown[];
-    level: 'error' | 'warn' | 'info' | 'log' | 'debug';
+    level: "error" | "warn" | "info" | "log" | "debug";
   };
   fetch: {
     method: string;
@@ -113,16 +114,16 @@ export type BrowserEvent = {
   id: string;
   timestamp: number;
   duration?: number;
-} & ToDiscriminatedUnion<Payloads, 'type', 'data'>;
+} & ToDiscriminatedUnion<Payloads, "type", "data">;
 
-type MessagePayload = Omit<BrowserEvent, 'duration'> & {
+type MessagePayload = Omit<BrowserEvent, "duration"> & {
   start_id?: string;
 };
 
 const isMessagePayload = (data: any): data is MessagePayload =>
   !!data?.type &&
-  typeof data.type === 'string' &&
-  typeof data.timestamp === 'number';
+  typeof data.type === "string" &&
+  typeof data.timestamp === "number";
 
 /**
  * Listen to browser events from the iframe.
@@ -158,9 +159,9 @@ export const useBrowserEvents = (enabled = true) => {
         return [...prev, payload as BrowserEvent];
       });
     };
-    window.addEventListener('message', onMessage);
+    window.addEventListener("message", onMessage);
     return () => {
-      window.removeEventListener('message', onMessage);
+      window.removeEventListener("message", onMessage);
     };
   }, [enabled]);
 

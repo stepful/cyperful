@@ -1,7 +1,6 @@
 {
-  "singleQuote": true,
   "rubySingleQuote": false,
   "rubyArrayLiteral": false,
   "trailingComma": "all",
-  "plugins": ["@prettier/plugin-ruby"]
+  "plugins": ["@prettier/plugin-ruby", "prettier-plugin-organize-imports"]
 }
