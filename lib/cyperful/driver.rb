@@ -18,7 +18,7 @@ class Cyperful::Driver
 
     @source_filepath =
       Object.const_source_location(test_class.name).first ||
-        (raise "Could not find source file for #{test_class.name}")
+        raise("Could not find source file for #{test_class.name}")
 
     reset_steps
 
@@ -36,11 +36,11 @@ class Cyperful::Driver
 
     # Sanity check
     unless @step_pausing_queue.empty?
-      raise "step_pausing_queue is not empty during setup"
+      raise "Unexpected: step_pausing_queue must be empty during setup"
     end
 
     # Wait for the user to click "Start"
-    step_pausing_dequeue
+    step_pausing_dequeue if @pause_at_step == true
   end
 
   def step_pausing_dequeue
@@ -81,6 +81,11 @@ class Cyperful::Driver
 
     @pause_at_step = true
 
+    run_options = self.class.pop_run_options!
+    if run_options.key?(:pause_at_step)
+      @pause_at_step = run_options[:pause_at_step]
+    end
+
     @test_result = nil
 
     # reset SCREENSHOTS_DIR
@@ -88,10 +93,39 @@ class Cyperful::Driver
     FileUtils.mkdir_p(SCREENSHOTS_DIR)
   end
 
+  @next_run_options = {}
+  def self.next_run_options=(options)
+    @next_run_options = options
+  end
+  def self.pop_run_options!
+    opts = @next_run_options
+    @next_run_options = {}
+    opts
+  end
+
+  private def reload_const(class_name, source_path)
+    Object.send(:remove_const, class_name) if Object.const_defined?(class_name)
+    load(source_path) # reload the file
+    unless Object.const_defined?(class_name)
+      raise "Failed to reload test class: #{class_name}"
+    end
+    Object.const_get(class_name)
+  end
+
   def queue_reset
-    # FIXME: there may be other tests that are "queued" to run `at_exit`,
-    # so they'll run before this test restarts.
-    at_exit { Minitest.run_one_method(@test_class, @test_name) }
+    at_exit do
+      # reload test-suite code on reset (for `setup_file_listener`)
+      # TODO: also reload dependent files
+      # NOTE: run_on_method will fail if test_name also changed
+      @test_class = reload_const(@test_class.name, @source_filepath)
+
+      # TODO
+      # if Cyperful.config.reload_source_files && defined?(Rails)
+      #   Rails.application.reloader.reload!
+      # end
+
+      Minitest.run_one_method(@test_class, @test_name)
+    end
   end
 
   # subscribe to the execution of each line of code in the test.
@@ -111,22 +145,33 @@ class Cyperful::Driver
     @tracepoint.enable
   end
 
+  private def test_directory
+    @source_filepath.match(%r{^/.+/(?:test|spec)\b})&.[](0) ||
+      raise("Could not determine test directory for #{@source_filepath}")
+  end
+
   # Every time a file changes the `test/` directory, reset this test
   # TODO: add an option to auto-run on reload
   def setup_file_listener
-    # TODO: we need to somehow reload the source files
+    # TODO
+    # if Cyperful.config.reload_source_files
+    #   @source_file_listener = Listen.to(rails_directory) ...
+    # end
 
-    # test_dir = @source_filepath.match(%r{^/.+/(?:test|spec)\b})[0]
+    if Cyperful.config.reload_test_files
+      @file_listener&.stop
+      @file_listener =
+        Listen.to(test_directory) do |_modified, _added, _removed|
+          puts "Test files changed, resetting test..."
 
-    # @file_listener&.stop
-    # @file_listener =
-    #   Listen.to(test_dir) do |_modified, _added, _removed|
-    #     puts "Test files changed, resetting test..."
+          # keep the same pause state after the reload
+          self.class.next_run_options = { pause_at_step: @pause_at_step }
 
-    #     @pause_at_step = true
-    #     @step_pausing_queue.enq(:reset)
-    #   end
-    # @file_listener.start
+          @pause_at_step = true # pause current test immediately
+          @step_pausing_queue.enq(:reset)
+        end
+      @file_listener.start
+    end
   end
 
   def print_steps
@@ -373,7 +418,7 @@ class Cyperful::Driver
     @tracepoint = nil
 
     if error&.is_a?(Cyperful::ResetCommand)
-      puts "\nPlease ignore the error, we're just resetting the test ;)"
+      puts "\nResetting test (ignore any error logs)..."
 
       @ui_server.notify(nil) # `break` out of the `loop` (see `UiServer#socket_open`)
 
@@ -405,6 +450,7 @@ class Cyperful::Driver
     @ui_server.notify(nil) # `break` out of the `loop` (see `UiServer#socket_open`)
 
     puts "Cyperful teardown complete. Waiting for command..."
+    # NOTE: this will raise an `Interrupt` if the user Ctrl+C's here
     command = @step_pausing_queue.deq
     queue_reset if command == :reset
   ensure

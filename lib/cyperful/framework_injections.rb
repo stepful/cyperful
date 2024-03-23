@@ -59,6 +59,10 @@ module Cyperful::SystemTestHelper
   end
 end
 
+# if defined?(Minitest::Test)
+#   Minitest::Test::PASSTHROUGH_EXCEPTIONS << Cyperful::AbstractCommand
+# end
+
 # we need to allow the iframe to be embedded in the cyperful server
 # TODO: use Rack middleware instead to support non-Rails apps
 if defined?(Rails)

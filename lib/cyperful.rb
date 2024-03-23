@@ -6,9 +6,15 @@ module Cyperful
 
   @current = nil
 
-  class Config < Struct.new(:port, keyword_init: true)
+  class Config < Struct.new(
+    :port,
+    :auto_run_on_reload,
+    :reload_test_files,
+    # :reload_source_files, # not implemented yet
+    keyword_init: true,
+  )
     def initialize
-      super(port: 3004)
+      super(port: 3004, auto_run_on_reload: true, reload_test_files: true)
     end
   end
   def self.config
