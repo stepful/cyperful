@@ -34,13 +34,7 @@ module Cyperful
   end
 end
 
-class Cyperful::AbstractCommand < StandardError
-end
-class Cyperful::ResetCommand < Cyperful::AbstractCommand
-end
-class Cyperful::ExitCommand < Cyperful::AbstractCommand
-end
-
+require "cyperful/commands"
 require "cyperful/test_parser"
 require "cyperful/ui_server"
 require "cyperful/driver"

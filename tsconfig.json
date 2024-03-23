@@ -17,6 +17,7 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "baseUrl": ".",
+    "types": ["./www/types"],
     "paths": {
       "*": ["./www/*", "./node_modules/*"]
     }

@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = "cyperful"
   s.version = "0.1.4"
-  s.summary = "Cypress-esque testing for Capybara tests"
+  s.summary = "Interactive test debugger for Capybara tests"
   s.homepage = "https://github.com/stepful/cyperful"
   s.license = "MIT"
   s.authors = ["Wyatt Ades"]

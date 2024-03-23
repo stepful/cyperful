@@ -74,7 +74,7 @@ class Cyperful::TestParser
           test_string = node.children[0].children[2].children[0]
 
           # https://github.com/rails/rails/blob/66676ce499a32e4c62220bd05f8ee2cdf0e15f0c/activesupport/lib/active_support/testing/declarative.rb#L14C23-L14C61
-          test_method = "test_#{test_string.gsub(/\s+/, "_")}".to_sym
+          test_method = :"test_#{test_string.gsub(/\s+/, "_")}"
 
           block_node = node.children[2]
           [test_method, block_node]

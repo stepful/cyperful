@@ -1,5 +1,4 @@
-// @ts-expect-error how to type SVGR imports?
-import { ReactComponent as LogoSvg } from '../logo.svg';
+import LogoSvg from '../logo.svg?react';
 import clsx from 'clsx';
 
 export const Logo: React.FC<{
@@ -14,7 +13,7 @@ export const Logo: React.FC<{
         width: `${size / 4}rem`,
         height: `${size / 4}rem`,
       }}
-      alt={alt}
+      aria-label={alt}
     />
   );
 };

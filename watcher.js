@@ -111,8 +111,8 @@
         const resBody = ct.includes('application/json')
           ? await response.clone().json()
           : ct.includes('text/')
-          ? await response.clone().text()
-          : `[[ Unhandled content-type: ${ct || '<empty>'} ]]`;
+            ? await response.clone().text()
+            : `[[ Unhandled content-type: ${ct || '<empty>'} ]]`;
 
         if (start)
           notify(
