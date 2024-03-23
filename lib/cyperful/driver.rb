@@ -130,9 +130,11 @@ class Cyperful::Driver
   end
 
   def print_steps
-    puts "#{@steps.length} steps:"
-    @steps.each do |step|
-      puts "  #{step[:method]}: #{step[:line]}:#{step[:column]}"
+    puts "Found #{@steps.length} steps:"
+    @steps.each_with_index do |step, i|
+      puts " #{
+             (i + 1).to_s.rjust(2)
+           }.  #{step[:method]}: #{step[:line]}:#{step[:column]}"
     end
     puts
   end
@@ -213,7 +215,7 @@ class Cyperful::Driver
   def pause_on_step(step)
     @current_step = step
 
-    puts "STEP: #{step[:as_string]}"
+    puts "STEP #{(step[:index] + 1).to_s.rjust(2)}: #{step[:as_string]}"
 
     if @pause_at_step == true || @pause_at_step == step[:index]
       @current_step[:paused_at] = (Time.now.to_f * 1000.0).to_i
