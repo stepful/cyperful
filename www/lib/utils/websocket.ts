@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const websocketConnections = new Map<string, WebSocket>();
 
 export const useWebsocketData = <Data extends { event: string }>(
-  eventType: Data['event'],
   url: string,
+  eventType: Data["event"],
   onError?: (err: Error) => void,
   /** Don't close the connection on unmount */
   keepOpen = true,
@@ -24,7 +24,7 @@ export const useWebsocketData = <Data extends { event: string }>(
     if (!websocketConnection) {
       try {
         const websocketUrl = new URL(url, window.location.href);
-        websocketUrl.protocol = 'ws:';
+        websocketUrl.protocol = "ws:";
         websocketConnection = new WebSocket(websocketUrl.href);
         websocketConnections.set(url, websocketConnection);
       } catch (err) {
@@ -33,23 +33,23 @@ export const useWebsocketData = <Data extends { event: string }>(
       }
 
       // try to tell the server to close the connection when the page is closed
-      window.addEventListener('beforeunload', () => {
+      window.addEventListener("beforeunload", () => {
         websocketConnection?.close();
       });
     }
 
-    websocketConnection.addEventListener('message', (evt) => {
+    websocketConnection.addEventListener("message", (evt) => {
       const data = evt.data ? (JSON.parse(evt.data) as Data) : null;
       if (!data || data.event !== eventType) return;
       update(null, data);
     });
 
-    websocketConnection.addEventListener('error', () => {
+    websocketConnection.addEventListener("error", () => {
       update(new Error(`WebSocket error. See console for details.`));
     });
 
-    websocketConnection.addEventListener('close', () => {
-      update(new Error('WebSocket closed. Try restarting the server.'));
+    websocketConnection.addEventListener("close", () => {
+      update(new Error("WebSocket closed. Try restarting the server."));
     });
 
     return () => {

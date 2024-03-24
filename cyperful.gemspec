@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Wyatt Ades"]
   s.required_ruby_version = ">= 3"
 
-  s.files = Dir["lib/**/*.rb", "watcher.js", "public/**/*"]
+  s.files = Dir["lib/**/*.rb", "public/**/*"]
 
   s.add_dependency("capybara", "~> 3")
   s.add_dependency("listen", "~> 3")

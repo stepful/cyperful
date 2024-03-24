@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vite",
     "watch": "vite build --watch",
-    "build": "vite build",
+    "build:www": "rm -rf public/assets && vite build",
+    "build:scripts": "vite build -c vite-scripts.config.ts",
+    "build": "npm run build:www && npm run build:scripts",
     "publish-gem": "rm -f *.gem && yarn build && gem build cyperful.gemspec && gem push *.gem && rm -f *.gem"
   },
   "dependencies": {
@@ -26,6 +28,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "tailwind-merge": "^2.2.2",
     "tailwindcss": "^3.3.3",
+    "typescript": "^5.4.3",
     "vite": "^5.2.4",
     "vite-plugin-svgr": "^4.2.0"
   }

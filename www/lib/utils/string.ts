@@ -2,7 +2,7 @@
  * Find the maximum common leading space in a multiline string and remove it.
  */
 export const removeLeadingSpace = (str: string) => {
-  const lines = str.split('\n');
+  const lines = str.split("\n");
 
   let maxSpaces = Infinity;
   for (const line of lines) {
@@ -17,5 +17,5 @@ export const removeLeadingSpace = (str: string) => {
     return str;
   }
 
-  return lines.map((line) => line.slice(maxSpaces)).join('\n');
+  return lines.map((line) => line.slice(maxSpaces)).join("\n");
 };

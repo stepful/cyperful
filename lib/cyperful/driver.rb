@@ -334,7 +334,7 @@ class Cyperful::Driver
     return @watcher_js if defined?(@watcher_js)
 
     @watcher_js =
-      File.read(File.join(Cyperful::ROOT_DIR, "watcher.js")).sub(
+      File.read(File.join(Cyperful::ROOT_DIR, "public/frame-agent.js")).sub(
         "__CYPERFUL_CONFIG__",
         { CYPERFUL_ORIGIN: "http://localhost:#{Cyperful.config.port}" }.to_json,
       )

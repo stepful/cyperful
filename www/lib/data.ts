@@ -58,8 +58,8 @@ export const sendCommand = async <Command extends keyof Commands>(
 
 export const useStepsData = () => {
   const { data, error } = useWebsocketData<StepsData>(
-    "steps_updated",
     "/api/websocket",
+    "steps_updated",
   );
 
   if (error) throw error;
@@ -71,25 +71,23 @@ export const useStepsData = () => {
   return data;
 };
 
-type Payloads = {
+type FetchPayload = {
+  method: string;
+  url: string;
+  status?: number;
+  body?: unknown;
+  bodyType?: string;
+  response?: unknown;
+  responseType?: string;
+};
+
+export type EventPayloads = {
   log: {
     args: unknown[];
-    level: "error" | "warn" | "info" | "log" | "debug";
+    level: "log" | "error" | "warn" | "info" | "dir" | "debug";
   };
-  fetch: {
-    method: string;
-    url: string;
-    status?: number;
-    body?: unknown;
-    response?: unknown;
-  };
-  xhr: {
-    method: string;
-    url: string;
-    status?: number;
-    body?: unknown;
-    response?: unknown;
-  };
+  fetch: FetchPayload;
+  xhr: FetchPayload;
   client_navigate: {
     url: string;
     replace: boolean;
@@ -114,7 +112,7 @@ export type BrowserEvent = {
   id: string;
   timestamp: number;
   duration?: number;
-} & ToDiscriminatedUnion<Payloads, "type", "data">;
+} & ToDiscriminatedUnion<EventPayloads, "type", "data">;
 
 type MessagePayload = Omit<BrowserEvent, "duration"> & {
   start_id?: string;

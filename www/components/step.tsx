@@ -4,8 +4,8 @@ import {
   LoaderIcon,
   PauseIcon,
 } from "~/components/icons";
-import { useHover } from "~/lib/context";
 import type { Step } from "~/lib/data";
+import { useHover } from "~/lib/hover";
 import { cn } from "~/lib/utils";
 
 export const StepRow: React.FC<{ step: Step; actions?: React.ReactNode }> = ({

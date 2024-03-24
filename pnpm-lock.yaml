@@ -56,6 +56,9 @@ dependencies:
   tailwindcss:
     specifier: ^3.3.3
     version: 3.4.1
+  typescript:
+    specifier: ^5.4.3
+    version: 5.4.3
   vite:
     specifier: ^5.2.4
     version: 5.2.4
