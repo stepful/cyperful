@@ -20,11 +20,17 @@ type WatcherEvent<
 };
 
 (() => {
-  const log = console.log;
+  const prevLog = console.log;
+  const log = (...args: unknown[]) => prevLog("[Cyperful Agent]", ...args);
 
-  log("Cyperful watcher loading...");
+  log("Loading...");
 
   const { CYPERFUL_ORIGIN } = __CYPERFUL_CONFIG__;
+
+  if (window.location.origin === CYPERFUL_ORIGIN) {
+    log("Ignoring parent frame (Why are we here?)");
+    return;
+  }
 
   let idCounter = 0;
   const notify = <
@@ -215,7 +221,7 @@ type WatcherEvent<
     });
   };
 
-  log("Cyperful watcher loaded.");
+  log("Loaded.");
 })();
 
 export {};

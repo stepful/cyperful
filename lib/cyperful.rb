@@ -11,10 +11,16 @@ module Cyperful
     :auto_run_on_reload,
     :reload_test_files,
     # :reload_source_files, # not implemented yet
+    :history_recording, # EXPERIMENTAL
     keyword_init: true,
   )
     def initialize
-      super(port: 3004, auto_run_on_reload: true, reload_test_files: true)
+      super(
+        port: 3004,
+        auto_run_on_reload: true,
+        reload_test_files: true,
+        history_recording: false,
+      )
     end
   end
   def self.config

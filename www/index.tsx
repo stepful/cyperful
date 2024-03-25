@@ -1,111 +1,20 @@
-import clsx from "clsx";
-import { memo, useRef, useState } from "react";
+import { memo, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { Logo, LogoText } from "~/components/Logo";
 import { Controls } from "~/components/controls";
+import { HistoryViewer } from "~/components/history-viewer";
 import { ErrorBoundary } from "~/components/shared";
 import { Steps } from "~/components/steps";
 import { useStepsData } from "~/lib/data";
 import { HoverProvider, useHover } from "~/lib/hover";
 import { cn } from "~/lib/utils";
 import { useElementSize } from "~/lib/utils/useElementSize";
+import { ConfigProvider } from "./lib/config";
 
 const INITIAL_WINDOW_SIZE = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-
-const HistoryScreenshot_: React.FC<{
-  containerRef: React.RefObject<HTMLElement>;
-}> = ({ containerRef }) => {
-  const { test_status } = useStepsData() || {};
-  const { step: hoveredStep } = useHover();
-
-  const hoverStepEndAt = hoveredStep?.end_at ?? null;
-
-  const videoElRef = useRef<HTMLVideoElement>(null);
-
-  // const videoRecorderRef = useRef<VideoRecorder | null>(null);
-  // const isRunning = test_status === "running";
-  // useEffect(() => {
-  //   if (isRunning) {
-  //     const recorder = (videoRecorderRef.current = new VideoRecorder());
-  //     recorder.start();
-  //     return () => {
-  //       recorder.stop().then(({ url }) => {
-  //         console.log(
-  //           "recording stopped",
-  //           url,
-  //           "duration:",
-  //           (recorder.endAt ?? 0) - (recorder.startAt ?? 0),
-  //         );
-  //         const video = videoElRef.current;
-  //         if (!video) return;
-  //         video.setAttribute("src", url);
-  //         video.setAttribute("type", "video/webm");
-  //         video.load();
-  //       });
-  //     };
-  //   }
-  // }, [isRunning]);
-
-  // const isEnded =
-  //   test_status === "passed" ||
-  //   test_status === "failed" ||
-  //   test_status === "paused";
-  // useLayoutEffect(() => {
-  //   const video = videoElRef.current;
-  //   if (!video) return;
-  //   if (!hoverStepEndAt) return;
-  //   const videoStartAt = videoRecorderRef.current?.startAt;
-  //   if (!videoStartAt) return;
-  //   if (!isEnded) return;
-
-  //   video.currentTime = hoverStepEndAt - videoStartAt;
-  // }, [isEnded, hoverStepEndAt]);
-
-  // FIXME: taking screenshots is too slow at the moment...
-  if (true)
-    return (
-      <p className="text-white p-4">
-        🚧 Historical snapshots are coming soon 🚧
-      </p>
-    );
-
-  // TODO: this strategy breaks if you resize the window :)
-  const imageSize = INITIAL_WINDOW_SIZE;
-  const scenarioContainer = containerRef.current;
-  const { x, y, width } = scenarioContainer?.getBoundingClientRect() || {
-    x: 0,
-    y: 0,
-    width: 100,
-  };
-  const scale = width / imageSize.width;
-
-  return (
-    <div
-      className={clsx(
-        !hoverStepEndAt && "hidden",
-        "absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden",
-      )}
-    >
-      <video
-        ref={videoElRef}
-        width={imageSize.width}
-        height={imageSize.height}
-        autoPlay={false}
-        // style={{
-        //   transformOrigin: "top left",
-        //   transform: `scale(${1 / scale}) translate(${-x * scale}px, ${
-        //     -y * scale
-        //   }px)`,
-        // }}
-        // alt=""
-      />
-    </div>
-  );
-};
-const HistoryScreenshot = memo(HistoryScreenshot_);
 
 const ScenarioFrame_ = () => {
   // TODO: make configurable
@@ -113,8 +22,7 @@ const ScenarioFrame_ = () => {
 
   const [containerSize, containerRef] = useElementSize();
 
-  const { step: hoveredStep } = useHover();
-  const isAnyHovered = !!hoveredStep?.end_at;
+  const { hoveredStep, canHover } = useHover();
 
   return (
     <div className="relative h-full p-2 bg-[#121b2e]">
@@ -135,7 +43,10 @@ const ScenarioFrame_ = () => {
             // NOTE: the `src` attribute is set by Capybara
             id="scenario-frame"
             title="scenario"
-            className={cn("absolute top-0 left-0", isAnyHovered && "opacity-0")}
+            className={cn(
+              "absolute top-0 left-0",
+              canHover && hoveredStep && "invisible",
+            )}
             style={{
               width: containerSize.width,
               height: containerSize.height,
@@ -148,7 +59,7 @@ const ScenarioFrame_ = () => {
             }}
           />
         ) : null}
-        <HistoryScreenshot containerRef={containerRef} />
+        <HistoryViewer containerRef={containerRef} />
       </div>
     </div>
   );
@@ -209,11 +120,13 @@ const Page: React.FC = () => {
         );
       }}
     >
-      <HoverProvider>
-        <Layout header={<Controls />} sidebar={<Steps />}>
-          <ScenarioFrame />
-        </Layout>
-      </HoverProvider>
+      <ConfigProvider>
+        <HoverProvider>
+          <Layout header={<Controls />} sidebar={<Steps />}>
+            <ScenarioFrame />
+          </Layout>
+        </HoverProvider>
+      </ConfigProvider>
     </ErrorBoundary>
   );
 };

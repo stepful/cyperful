@@ -237,10 +237,38 @@ class Cyperful::Driver
     @ui_server.notify(steps_updated_data)
   end
 
+  # called at the start of each step
+  def pause_on_step(step)
+    @current_step = step
+
+    # using `print` so we can append the step's status (see `finish_current_step`)
+    print("STEP #{(step[:index] + 1).to_s.rjust(2)}: #{step[:as_string]}")
+
+    if @pause_at_step == true || @pause_at_step == step[:index]
+      @current_step[:paused_at] = (Time.now.to_f * 1000.0).to_i
+      @current_step[:status] = "paused"
+      notify_updated_steps
+
+      # async wait for `continue_next_step`
+      step_pausing_dequeue
+    end
+
+    @current_step[:status] = "running"
+    @current_step[:start_at] = (Time.now.to_f * 1000.0).to_i
+    notify_updated_steps
+  end
+
+  # called at the end of each step
   private def finish_current_step(error = nil)
     if @current_step
       @current_step[:end_at] = (Time.now.to_f * 1000.0).to_i
       @current_step[:status] = !error ? "passed" : "failed"
+
+      puts(
+        " (#{@current_step[:end_at] - @current_step[:start_at]}ms)#{
+          error ? " FAILED" : ""
+        }",
+      )
 
       # take screenshot after the step has finished
       # path = File.join(SCREENSHOTS_DIR, "#{@current_step[:index]}.png")
@@ -254,25 +282,6 @@ class Cyperful::Driver
       @current_step = nil
     end
 
-    notify_updated_steps
-  end
-
-  def pause_on_step(step)
-    @current_step = step
-
-    puts "STEP #{(step[:index] + 1).to_s.rjust(2)}: #{step[:as_string]}"
-
-    if @pause_at_step == true || @pause_at_step == step[:index]
-      @current_step[:paused_at] = (Time.now.to_f * 1000.0).to_i
-      @current_step[:status] = "paused"
-      notify_updated_steps
-
-      # async wait for `continue_next_step`
-      step_pausing_dequeue
-    end
-
-    @current_step[:status] = "running"
-    @current_step[:start_at] = (Time.now.to_f * 1000.0).to_i
     notify_updated_steps
   end
 
@@ -330,10 +339,10 @@ class Cyperful::Driver
     [abs_url, display_url]
   end
 
-  def self.load_watcher_js
-    return @watcher_js if defined?(@watcher_js)
+  def self.load_frame_agent_js
+    return @frame_agent_js if defined?(@frame_agent_js)
 
-    @watcher_js =
+    @frame_agent_js =
       File.read(File.join(Cyperful::ROOT_DIR, "public/frame-agent.js")).sub(
         "__CYPERFUL_CONFIG__",
         { CYPERFUL_ORIGIN: "http://localhost:#{Cyperful.config.port}" }.to_json,
@@ -362,10 +371,10 @@ class Cyperful::Driver
 
     @session.execute_script("window.location.href = #{abs_url.to_json}")
 
-    # inject the watcher script into the page being tested.
+    # inject the frame-agent script into the page being tested.
     # this script will notify the Cyperful UI for events like:
     # console logs, network requests, client navigations, errors, etc.
-    @session.execute_script(Cyperful::Driver.load_watcher_js) # ~9ms empirically
+    @session.execute_script(Cyperful::Driver.load_frame_agent_js) # ~9ms empirically
 
     true
   end

@@ -106,6 +106,18 @@ class Cyperful::UiServer
 
       res.status = 204
     end
+
+    @server.mount_proc("/api/config") do |req, res|
+      if req.request_method != "GET"
+        res.body = "Only POST allowed"
+        res.status = 405
+        next
+      end
+
+      res.body = Cyperful.config.to_h.to_json
+      res["Content-Type"] = "application/json"
+      res.status = 200
+    end
   end
 
   def start_async

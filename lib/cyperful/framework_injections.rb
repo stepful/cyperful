@@ -1,3 +1,5 @@
+require "action_dispatch/system_testing/driver"
+
 # we need to override the some Capybara::Session methods because they
 # control the top-level browser window, but we want them
 # to control the iframe instead
@@ -58,6 +60,31 @@ module Cyperful::SystemTestHelper
     nil
   end
 end
+
+module PrependSystemTestingDriver
+  def initialize(...)
+    super(...)
+
+    prev_capabilities = @capabilities
+    @capabilities =
+      proc do |driver_opts|
+        prev_capabilities&.call(driver_opts)
+
+        next unless driver_opts.respond_to?(:add_argument)
+
+        # this assumes Selenium and Chrome:
+
+        # so user isn't prompted when we start recording video w/ MediaStream
+        driver_opts.add_argument("--auto-accept-this-tab-capture")
+        driver_opts.add_argument("--use-fake-ui-for-media-stream")
+
+        # make sure we're not in headless mode
+        driver_opts.args.delete("--headless")
+        driver_opts.args.delete("--headless=new")
+      end
+  end
+end
+ActionDispatch::SystemTesting::Driver.prepend(PrependSystemTestingDriver)
 
 # if defined?(Minitest::Test)
 #   Minitest::Test::PASSTHROUGH_EXCEPTIONS << Cyperful::AbstractCommand
