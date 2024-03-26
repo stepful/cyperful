@@ -29,7 +29,8 @@ export const useQuery = <T>({
   };
 
   useEffect(() => {
-    fetch();
+    void fetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return state;

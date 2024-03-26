@@ -58,7 +58,7 @@ export const useWebsocketData = <Data extends { event: string }>(
         websocketConnections.delete(url);
       }
     };
-  }, [url, eventType, update]);
+  }, [url, eventType, update, keepOpen]);
 
   return res;
 };

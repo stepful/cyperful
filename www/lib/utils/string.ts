@@ -7,9 +7,10 @@ export const removeLeadingSpace = (str: string) => {
   let maxSpaces = Infinity;
   for (const line of lines) {
     const match = line.match(/^(\s*)([^\s])?/);
-    const isAllWhitespace = match?.[2] === undefined;
+    if (!match) continue; // not possible
+    const isAllWhitespace = match[2] === undefined;
     if (isAllWhitespace) continue;
-    const spaceCount = match[1].length;
+    const spaceCount = match[1]!.length;
     if (spaceCount < maxSpaces) maxSpaces = spaceCount;
   }
 
