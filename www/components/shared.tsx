@@ -7,12 +7,14 @@ import { cn } from "~/lib/utils";
  */
 
 const BUTTON_COLORS = {
-  gray: "text-black bg-gray-200 hover:bg-gray-300",
-  green: "text-white bg-green-500 hover:bg-green-600",
-  blue: "text-white bg-blue-500 hover:bg-blue-600",
-  red: "text-white bg-red-500 hover:bg-red-600",
-  orange: "text-white bg-orange-400 hover:bg-orange-500",
-  yellow: "text-white bg-yellow-500 hover:bg-yellow-600",
+  gray: "text-black bg-gray-200 border border-gray-300 hover:bg-gray-300",
+  green: "text-white bg-green-500 border border-green-600 hover:bg-green-600",
+  blue: "text-white bg-blue-500 border border-blue-600 hover:bg-blue-600",
+  red: "text-white bg-red-500 border border-red-600 hover:bg-red-600",
+  orange:
+    "text-white bg-orange-400 border border-orange-500 hover:bg-orange-500",
+  yellow:
+    "text-white bg-yellow-500 border border-yellow-600 hover:bg-yellow-600",
 };
 
 const BUTTON_SIZES = {
@@ -110,3 +112,11 @@ export class ErrorBoundary extends Component<{
     return this.props.children;
   }
 }
+
+export const withErrorBoundary =
+  (Comp: React.FC, Fallback: React.FC): React.FC =>
+  (props) => (
+    <ErrorBoundary fallback={() => <Fallback />}>
+      <Comp {...props} />
+    </ErrorBoundary>
+  );

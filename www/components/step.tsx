@@ -34,14 +34,19 @@ export const StepRow: React.FC<{ step: Step; actions?: React.ReactNode }> = ({
     textClass = "text-yellow-500";
   }
 
-  const { setStepIndex } = useHover();
+  const setHover = useHover((s) => s.setHover);
 
   return (
     <li
       data-step-index={step.index}
       className="group relative p-2 text-sm border-b border-gray-200 flex items-start hover:bg-gray-100 cursor-pointer"
-      onMouseEnter={() => setStepIndex(step.index)}
-      onMouseLeave={() => setStepIndex(null)}
+      onMouseEnter={() => setHover(step.index)}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const ratio = (e.clientY - rect.top) / rect.height;
+        setHover(step.index, ratio);
+      }}
+      onMouseLeave={() => setHover(null)}
     >
       <p className="flex-1">
         <span className="text-gray-400 w-6 inline-block">

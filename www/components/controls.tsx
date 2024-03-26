@@ -1,4 +1,6 @@
 import {
+  CheckIcon,
+  CloseIcon,
   PlayIcon,
   ResetIcon,
   StepThroughIcon,
@@ -56,11 +58,18 @@ export const Controls: React.FC = () => {
         <>
           <span
             className={cn(
-              "text-md capitalize rounded-full text-white px-3 py-1",
-              status === "passed" ? "bg-green-500" : "bg-red-500",
+              "text-md capitalize rounded-full px-3 py-1",
+              status === "passed"
+                ? "bg-green-500 text-green-100"
+                : "bg-red-500 text-red-100",
             )}
           >
             Test {status}
+            {status === "passed" ? (
+              <CheckIcon className="inline-block w-5 h-5 ml-1" />
+            ) : (
+              <CloseIcon className="inline-block w-5 h-5 ml-1" />
+            )}
           </span>
         </>
       )}

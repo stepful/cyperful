@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { request } from "~/lib/request";
 import { EMPTY_ARRAY } from "~/lib/utils";
+import { createProvider } from "~/lib/utils/providers";
 import { useWebsocketData } from "~/lib/utils/websocket";
 
 const STATUS_MAP = {
@@ -56,7 +57,7 @@ export const sendCommand = async <Command extends keyof Commands>(
   await request("/api/steps/command", "POST", { command, params });
 };
 
-export const useStepsData = () => {
+export const [StepsDataProvider, useStepsData] = createProvider(() => {
   const { data, error } = useWebsocketData<StepsData>(
     "/api/websocket",
     "steps_updated",
@@ -69,7 +70,7 @@ export const useStepsData = () => {
   if (!data.steps.length) throw new Error("No steps!");
 
   return data;
-};
+});
 
 type FetchPayload = {
   method: string;

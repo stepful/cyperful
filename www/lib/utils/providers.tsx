@@ -1,24 +1,26 @@
-import { createContext, memo, useContext } from "react";
+import { memo, useRef } from "react";
 // React RFC https://github.com/reactjs/rfcs/pull/119 in userland:
-// import * as UCS from 'use-context-selector';
+import * as UCS from "use-context-selector";
 
 const emptyCtx = Symbol("empty ctx");
 
 /**
- * Create a context provider and a hook to access it. Useful if you need:
- * - to avoid prop drilling
- * - to hold a state that is shared across multiple components
- * - to avoid re-rendering components that don't need to re-render
- * - to only run expensive calculations in one place (e.g. in a `useMemo`)
- *
  * @example
- * const [StuffProvider, useStuff] = createProvider((props: { xs: number[] }) => {
+ * const [StuffProvider, useStuff] = createSelectorProvider((props: { xs: number[] }) => {
  *  const [y, setY] = useState(0);
  *  return { xs: props.xs, y, setY };
  * });
  *
  * // fetch the whole context:
  * const { x, y } = useStuff();
+ *
+ * // just subscribe to a specific value. This hook will only re-render when that value's reference changes.
+ * const xs = useStuffSelector((ctx) => ctx.xs);
+ *
+ * // optionally provide an equality function for `useContextSelector` if
+ * // you want to compare e.g. an array's values instead of it's reference
+ * // (the default equality function is `Object.is(a, b)`)
+ * const xs = useStuffSelector((ctx) => ctx.xs, (a, b) => _.isEqual(a, b));
  */
 export const createProvider = <
   CtxValue,
@@ -30,7 +32,7 @@ export const createProvider = <
   /** Just used for error messages and React displayName. Use PascalCase. */
   label = "Unknown",
 ) => {
-  const Context = createContext<CtxValue | typeof emptyCtx>(emptyCtx);
+  const Context = UCS.createContext<CtxValue | typeof emptyCtx>(emptyCtx);
 
   const { Provider: ProviderCtx } = Context;
 
@@ -45,12 +47,33 @@ export const createProvider = <
 
   Provider.displayName = `${label}Provider`;
 
-  const useCtx = (): CtxValue => {
-    const ctx = useContext(Context);
-    if (ctx === emptyCtx)
-      throw new Error(`${label} context missing a provider`);
-    return ctx;
-  };
+  function useCtx(): CtxValue;
+  function useCtx<T>(
+    selector: (base: CtxValue) => T,
+    equalityFn?: (a: T | null, b: T) => boolean,
+  ): T;
+  function useCtx<T>(
+    selector?: (base: CtxValue) => T,
+    equalityFn?: (a: T | null, b: T) => boolean,
+  ) {
+    const prevVal = useRef<T | null>(null);
+
+    return UCS.useContextSelector(Context, (ctx) => {
+      if (ctx === emptyCtx)
+        throw new Error(`${label} context missing a provider`);
+
+      if (equalityFn) {
+        const newVal = selector!(ctx);
+        if (equalityFn(prevVal.current, newVal)) {
+          return prevVal.current;
+        } else {
+          return (prevVal.current = newVal);
+        }
+      } else {
+        return selector ? selector(ctx) : ctx;
+      }
+    });
+  }
 
   return [Provider, useCtx] as const;
 };

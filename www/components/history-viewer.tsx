@@ -1,11 +1,11 @@
 import clsx from "clsx";
 import { clamp } from "lodash-es";
-import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useHover } from "~/lib/hover";
-import { VideoRecorder, VideoResult } from "~/lib/video";
+import { memo, useLayoutEffect, useRef } from "react";
+import { useHistoryRecording } from "~/lib/history-recording";
+import { type VideoResult } from "~/lib/video";
 
 // TODO: this strategy breaks if you resize the window :)
-const mapElementVideo = (
+const renderVideoDimensions = (
   videoResult: VideoResult,
   scenarioElement: HTMLElement,
 ): React.VideoHTMLAttributes<HTMLVideoElement> => {
@@ -33,76 +33,99 @@ const mapElementVideo = (
     style: {
       display: "block",
       maxWidth: "none",
-      width: videoResult.pixelDims.width,
-      height: videoResult.pixelDims.height,
+      width: videoResult.pixelDims.width + 0.75,
+      height: videoResult.pixelDims.height + 0.75,
       transformOrigin: "top left",
-      transform: `translate(${-x}px, ${-y}px)`,
+      transform: `translate(${-x - 0.2}px, ${-y}px)`,
     },
   };
+};
+
+const SeekBar: React.FC<{
+  seekTime: number | null;
+  duration: number | null;
+}> = ({ seekTime, duration }) => {
+  const ratio = duration != null ? (seekTime ?? 0) / duration : 0;
+
+  return (
+    <div className="rounded-full h-2.5 bg-slate-950 border border-slate-800 shadow-md absolute bottom-1 left-1 right-1">
+      <div
+        className="rounded-full h-full bg-green-500 transition-[width] duration-100"
+        style={{ width: `${ratio * 100.0}%` }}
+      />
+      {/* Tooltip with time */}
+      {seekTime != null && duration != null && (
+        <div
+          className="absolute top-0 left-0 right-0 text-xs text-center"
+          style={{ transform: "translateY(-120%)" }}
+        >
+          {seekTime.toFixed(2)} / {duration.toFixed(2)}s
+        </div>
+      )}
+    </div>
+  );
+};
+
+const getVideoElDuration = (videoEl: HTMLVideoElement | null) => {
+  if (!videoEl) return null;
+  const dur = videoEl.duration;
+  // FIXME: sometimes video's have `duration=0` and can't be seeked :/
+  // I can only get it to consistently work AFTER clicking the "Reload test" button.
+  if (!Number.isFinite(dur) || dur <= 0) {
+    console.warn("Invalid video duration:", dur);
+    return null;
+  }
+  return dur;
 };
 
 const HistoryViewer_: React.FC<{
   containerRef: React.RefObject<HTMLElement>;
 }> = ({ containerRef }) => {
-  const { hoveredStep, shouldRecord, canHover, isRunning } = useHover();
-  const hoverStepEndAt = canHover ? hoveredStep?.end_at ?? null : null;
+  const {
+    videoResult,
+    videoRecorder,
+    hoveredStep,
+    canShowHistory,
+    hoveredExtraTime,
+  } = useHistoryRecording();
 
   const videoElRef = useRef<HTMLVideoElement>(null);
-  const videoRecorderRef = useRef<VideoRecorder | null>(null);
-  const [videoResult, setVideoResult] = useState<VideoResult | null>(null);
 
-  useEffect(() => {
-    if (shouldRecord && isRunning) {
-      const recorder = (videoRecorderRef.current = new VideoRecorder());
+  const recordingStartAt = videoRecorder?.startAt ?? null;
+  const hoveredStepStartAt = canShowHistory
+    ? hoveredStep?.start_at ?? null
+    : null;
 
-      recorder.start();
+  const videoActualDuration = getVideoElDuration(videoElRef.current);
 
-      return () => {
-        recorder.stop().then((res) => {
-          console.log("recording stopped:", res);
-          setVideoResult(res);
-        });
-      };
-    }
-  }, [shouldRecord, isRunning]);
+  const HACK_PADDING = 20;
+  const videoSeekTime =
+    videoActualDuration && hoveredStepStartAt && recordingStartAt
+      ? clamp(
+          (hoveredStepStartAt -
+            recordingStartAt +
+            hoveredExtraTime +
+            HACK_PADDING) /
+            1000.0,
+          0,
+          videoActualDuration,
+        )
+      : null;
 
   useLayoutEffect(() => {
-    if (!hoverStepEndAt) return;
+    if (videoSeekTime == null) return;
     const videoEl = videoElRef.current;
     if (!videoEl) return;
-    const videoStartAt = videoRecorderRef.current?.startAt;
-    if (!videoStartAt) return;
 
-    // FIXME: sometimes video's have `duration=0` and can't be seeked :/
-    // I can only get it to consistently work AFTER clicking the "Reload test" button.
-    const videoDuration = videoEl.duration;
-    if (
-      Number.isNaN(videoDuration) ||
-      videoDuration === Infinity ||
-      videoDuration <= 0
-    )
-      return console.warn("Invalid video duration:", videoDuration);
-
-    const delta = hoverStepEndAt - videoStartAt;
-
-    // console.log(
-    //   "seek:",
-    //   delta / 1000.0,
-    //   "readyState:",
-    //   videoEl.readyState,
-    //   "duration:",
-    //   videoEl.duration,
-    // );
-
-    // videoEl.pause();
-    videoEl.currentTime = clamp(delta / 1000.0, 0, videoDuration);
-  }, [hoverStepEndAt]);
+    if (!videoEl.paused) videoEl.pause();
+    videoEl.currentTime = videoSeekTime;
+  }, [videoSeekTime]);
 
   return (
     <>
       <div
         className={clsx(
-          !hoverStepEndAt && "invisible",
+          !hoveredStepStartAt && "invisible",
           "absolute top-0 left-0 w-full h-full overflow-hidden",
           "pointer-events-none",
         )}
@@ -112,9 +135,6 @@ const HistoryViewer_: React.FC<{
             className="bg-gray-500"
             ref={videoElRef}
             src={videoResult.url}
-            // controls
-            // autoPlay
-            // loop
             muted
             playsInline
             // onLoadedMetadata={(e) => {
@@ -124,9 +144,11 @@ const HistoryViewer_: React.FC<{
             //     height: e.currentTarget.videoHeight,
             //   });
             // }}
-            {...mapElementVideo(videoResult, containerRef.current)}
+            {...renderVideoDimensions(videoResult, containerRef.current)}
           />
         ) : null}
+
+        <SeekBar seekTime={videoSeekTime} duration={videoActualDuration} />
       </div>
     </>
   );

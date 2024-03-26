@@ -1,15 +1,19 @@
 import { memo, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { Logo, LogoText } from "~/components/Logo";
 import { Controls } from "~/components/controls";
 import { HistoryViewer } from "~/components/history-viewer";
+import { Layout } from "~/components/layout";
 import { ErrorBoundary } from "~/components/shared";
 import { Steps } from "~/components/steps";
-import { useStepsData } from "~/lib/data";
-import { HoverProvider, useHover } from "~/lib/hover";
-import { cn } from "~/lib/utils";
+import { ConfigProvider } from "~/lib/config";
+import { StepsDataProvider } from "~/lib/data";
+import {
+  HistoryRecordingProvider,
+  useHistoryRecording,
+} from "~/lib/history-recording";
+import { HoverProvider } from "~/lib/hover";
+import { clsx } from "~/lib/utils";
 import { useElementSize } from "~/lib/utils/useElementSize";
-import { ConfigProvider } from "./lib/config";
 
 const INITIAL_WINDOW_SIZE = {
   width: window.innerWidth,
@@ -22,7 +26,7 @@ const ScenarioFrame_ = () => {
 
   const [containerSize, containerRef] = useElementSize();
 
-  const { hoveredStep, canHover } = useHover();
+  const showingHistoryRecording = useHistoryRecording((s) => s.showing);
 
   return (
     <div className="relative h-full p-2 bg-[#121b2e]">
@@ -43,9 +47,9 @@ const ScenarioFrame_ = () => {
             // NOTE: the `src` attribute is set by Capybara
             id="scenario-frame"
             title="scenario"
-            className={cn(
+            className={clsx(
               "absolute top-0 left-0",
-              canHover && hoveredStep && "invisible",
+              showingHistoryRecording && "invisible",
             )}
             style={{
               width: containerSize.width,
@@ -67,44 +71,15 @@ const ScenarioFrame_ = () => {
 // using `memo` to make sure we never re-render the iframe
 const ScenarioFrame = memo(ScenarioFrame_);
 
-const Layout: React.FC<{
-  header?: React.ReactNode;
-  sidebar?: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ header, sidebar, children }) => {
-  const status = useStepsData()?.test_status;
-  const isRunning = status === "running";
-
+const Page = memo(() => {
   return (
-    <div className="h-screen flex flex-col items-stretch">
-      <nav className="h-14 px-6 py-1 border-b border-gray-200 flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <Logo animating={isRunning} size={10} alt="Cyperful logo" />
-          <h1 className="text-xl font-bold">
-            <LogoText />
-          </h1>
-        </div>
-        {header}
-      </nav>
-      <div className="flex flex-1 items-stretch">
-        {sidebar ? (
-          <div
-            className="basis-96 flex flex-col items-stretch overflow-y-auto"
-            style={{
-              maxHeight: "calc(100vh - 3.5rem)",
-            }}
-          >
-            {sidebar}
-          </div>
-        ) : null}
-
-        <div className="flex-1">{children}</div>
-      </div>
-    </div>
+    <Layout header={<Controls />} sidebar={<Steps />}>
+      <ScenarioFrame />
+    </Layout>
   );
-};
+});
 
-const Page: React.FC = () => {
+const App: React.FC = () => {
   return (
     <ErrorBoundary
       fallback={(error) => {
@@ -121,14 +96,16 @@ const Page: React.FC = () => {
       }}
     >
       <ConfigProvider>
-        <HoverProvider>
-          <Layout header={<Controls />} sidebar={<Steps />}>
-            <ScenarioFrame />
-          </Layout>
-        </HoverProvider>
+        <StepsDataProvider>
+          <HoverProvider>
+            <HistoryRecordingProvider>
+              <Page />
+            </HistoryRecordingProvider>
+          </HoverProvider>
+        </StepsDataProvider>
       </ConfigProvider>
     </ErrorBoundary>
   );
 };
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<Page />);
+ReactDOM.createRoot(document.getElementById("root")!).render(<App />);

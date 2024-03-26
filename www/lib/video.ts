@@ -72,8 +72,13 @@ export class VideoRecorder {
       }
     };
 
+    mediaRecorder.onstart = () => {
+      this.startAt = Date.now();
+    };
+
     mediaRecorder.onstop = () => {
       this.endAt = Date.now();
+
       if (!this.recordedChunks.some((c) => c.size > 0)) {
         this.subject.error("No data recorded");
         return;
@@ -89,7 +94,7 @@ export class VideoRecorder {
     // Start recording
     mediaRecorder.start(1000);
 
-    this.startAt = Date.now();
+    // this.startAt = Date.now();
   }
 
   getUrl() {
