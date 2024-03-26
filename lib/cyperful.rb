@@ -19,7 +19,7 @@ module Cyperful
         port: 3004,
         auto_run_on_reload: true,
         reload_test_files: true,
-        history_recording: false,
+        history_recording: true,
       )
     end
   end
