@@ -1,8 +1,8 @@
-import { Fragment } from "react";
+import { Fragment, memo } from "react";
 import {
+  SyntaxHighlight,
   inspectRequestBody,
   safeStringify,
-  SyntaxHighlight,
 } from "~/components/syntax-highlighter";
 import type { BrowserEvent } from "~/lib/data";
 
@@ -98,7 +98,7 @@ const eventContent = (event: BrowserEvent): React.ReactNode => {
   return null;
 };
 
-export const EventRow: React.FC<{ event: BrowserEvent }> = ({ event: evt }) => {
+const EventRow_: React.FC<{ event: BrowserEvent }> = ({ event: evt }) => {
   return (
     <li key={evt.id}>
       <p className="p-2 text-xs text-gray-500">
@@ -111,3 +111,4 @@ export const EventRow: React.FC<{ event: BrowserEvent }> = ({ event: evt }) => {
     </li>
   );
 };
+export const EventRow = memo(EventRow_);

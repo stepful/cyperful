@@ -1,12 +1,26 @@
 import clsx from "clsx";
-import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
-import graphql from "react-syntax-highlighter/dist/esm/languages/prism/graphql";
-import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
-import { oneLight as highlightStyle } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useEffect, useState } from "react";
 import { removeLeadingSpace } from "~/lib/utils/string";
 
-SyntaxHighlighter.registerLanguage("json", json);
-SyntaxHighlighter.registerLanguage("graphql", graphql);
+import SyntaxHighlighterWorker from "./syntax-highlighter-worker?worker";
+
+const worker = new SyntaxHighlighterWorker();
+
+let taskIdCounter = 0;
+const highlight = async (code: string, lang: string) => {
+  const taskId = taskIdCounter++;
+
+  return new Promise<string>((resolve) => {
+    const cb = (event: MessageEvent) => {
+      if (event.data.taskId === taskId) {
+        resolve(event.data.html);
+        worker.removeEventListener("message", cb);
+      }
+    };
+    worker.addEventListener("message", cb);
+    worker.postMessage({ taskId, code, lang });
+  });
+};
 
 const QUERY_KEYS = [
   "query",
@@ -14,7 +28,7 @@ const QUERY_KEYS = [
 ] as const;
 export const inspectRequestBody = (url: string, body: unknown) => {
   if (
-    url.match(/[\/\._-](graphql|gql)\b/) &&
+    url.match(/[/._-](graphql|gql)\b/) &&
     body != null &&
     typeof body === "object"
   ) {
@@ -54,22 +68,21 @@ export const SyntaxHighlight: React.FC<{
   type: "graphql" | "json" | null;
   className?: string;
 }> = ({ content, type, className }) => {
-  if (type == null) {
-    return (
-      <pre className={clsx("whitespace-pre-wrap overflow-auto", className)}>
-        {safeStringify(content)}
-      </pre>
-    );
-  }
+  const [renderedHtml, setRenderedHtml] = useState<string | null>(null);
+  useEffect(() => {
+    if (type) {
+      void highlight(safeStringify(content), type).then(setRenderedHtml);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <SyntaxHighlighter
-      language={type}
-      customStyle={{ padding: 0, margin: 0, background: "none !important" }}
-      style={highlightStyle}
-      className={className}
-    >
-      {safeStringify(content)}
-    </SyntaxHighlighter>
+    <div className={clsx("whitespace-pre-wrap overflow-auto", className)}>
+      {renderedHtml != null ? (
+        <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />
+      ) : (
+        safeStringify(content)
+      )}
+    </div>
   );
 };

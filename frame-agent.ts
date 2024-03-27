@@ -1,9 +1,16 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import type { EventPayloads } from "~/lib/data";
 
 declare global {
-  var __CYPERFUL_CONFIG__: {
+  let __CYPERFUL_CONFIG__: {
     CYPERFUL_ORIGIN: string;
   };
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  interface Window {
+    __cyperfulAgentInitialized?: boolean;
+  }
 }
 
 type WatcherEvent<
@@ -20,6 +27,9 @@ type WatcherEvent<
 };
 
 (() => {
+  if (window.__cyperfulAgentInitialized) return;
+  window.__cyperfulAgentInitialized = true;
+
   const prevLog = console.log;
   const log = (...args: unknown[]) => prevLog("[Cyperful Agent]", ...args);
 
@@ -115,7 +125,9 @@ type WatcherEvent<
   function formDataToObject(formData: FormData) {
     const obj: Record<string, string> = {};
     for (const [key, value] of formData.entries()) {
-      obj[key] = value.toString();
+      if (value instanceof Blob) {
+        obj[key] = `[[ Blob: ${value.size} bytes ]]`;
+      } else obj[key] = value.toString();
     }
     return obj;
   }
