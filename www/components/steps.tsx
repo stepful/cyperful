@@ -16,13 +16,14 @@ const Steps_: React.FC = () => {
     test_suite,
     test_name,
     test_error,
+    pause_at_step,
   } = useStepsData() || {};
 
   const events = useBrowserEvents();
 
   // scroll to last updated step
   useEffect(() => {
-    if (!steps?.length) return;
+    if (!steps?.[0]) return;
     if (steps[0].status === "pending") return; // tests haven't started yet
 
     let lastNonPendingStepIndex = findLastIndex(
@@ -83,6 +84,7 @@ const Steps_: React.FC = () => {
               {failedStepI === -1 ? showError : null}
               <StepRow
                 step={step}
+                pauseAtStep={pause_at_step === step.index}
                 actions={
                   <>
                     {(test_status === "paused" || test_status === "pending") &&
@@ -90,7 +92,9 @@ const Steps_: React.FC = () => {
                       step.index > current_step_index) ? (
                       <Button
                         onClick={() => {
-                          sendCommand("start", { pause_at_step: step.index });
+                          void sendCommand("start", {
+                            pause_at_step: step.index,
+                          });
                         }}
                         className="mr-2"
                         size="sm"

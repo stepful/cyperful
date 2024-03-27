@@ -58,7 +58,7 @@ export const Controls: React.FC = () => {
         <>
           <span
             className={cn(
-              "text-md capitalize rounded-full px-3 py-1",
+              "text-md capitalize rounded-full px-3 py-1 flex items-center",
               status === "passed"
                 ? "bg-green-500 text-green-100"
                 : "bg-red-500 text-red-100",

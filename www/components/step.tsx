@@ -1,6 +1,7 @@
 import {
   CheckIcon,
   CloseIcon,
+  GoToHereIcon,
   LoaderIcon,
   PauseIcon,
 } from "~/components/icons";
@@ -8,10 +9,11 @@ import type { Step } from "~/lib/data";
 import { useHover } from "~/lib/hover";
 import { cn } from "~/lib/utils";
 
-export const StepRow: React.FC<{ step: Step; actions?: React.ReactNode }> = ({
-  step,
-  actions,
-}) => {
+export const StepRow: React.FC<{
+  step: Step;
+  actions?: React.ReactNode;
+  pauseAtStep?: boolean;
+}> = ({ step, actions, pauseAtStep }) => {
   const ms = step.start_at && step.end_at ? step.end_at - step.start_at : null;
 
   let icon: React.ReactNode = null;
@@ -59,6 +61,9 @@ export const StepRow: React.FC<{ step: Step; actions?: React.ReactNode }> = ({
         ))}
         <span className={cn("font-mono", textClass)}>{step.as_string}</span>
         {icon}
+        {pauseAtStep ? (
+          <GoToHereIcon className="inline-block w-5 h-5 text-yellow-500 ml-1" />
+        ) : null}
         {ms != null ? (
           <span className="text-gray-400 ml-1">({ms}ms)</span>
         ) : null}
