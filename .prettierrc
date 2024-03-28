@@ -2,5 +2,9 @@
   "rubySingleQuote": false,
   "rubyArrayLiteral": false,
   "trailingComma": "all",
-  "plugins": ["@prettier/plugin-ruby", "prettier-plugin-organize-imports"]
+  "plugins": [
+    "@prettier/plugin-ruby",
+    "prettier-plugin-organize-imports",
+    "prettier-plugin-tailwindcss"
+  ]
 }

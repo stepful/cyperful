@@ -1,8 +1,8 @@
 import { getHighlighterCore } from "shiki/core";
 import getWasm from "shiki/wasm";
 
-import theme from "shiki/themes/github-light.mjs";
-// import vesper from "shiki/themes/vesper.mjs";
+// import theme from "shiki/themes/github-light.mjs";
+import theme from "shiki/themes/vesper.mjs";
 
 import graphql from "shiki/langs/graphql.mjs";
 import json from "shiki/langs/json.mjs";
@@ -16,22 +16,23 @@ const highlighter = getHighlighterCore({
   loadWasm: getWasm,
 });
 
-self.addEventListener(
-  "message",
-  async (
-    event: MessageEvent<{
-      taskId: number;
-      code: string;
-      lang: string;
-    }>,
-  ) => {
-    const { taskId, code, lang } = event.data;
+export type TaskRequest = {
+  taskId: number;
+  code: string;
+  lang: string;
+};
+export type TaskResponse = {
+  taskId: number;
+  html: string;
+};
 
-    const html = (await highlighter).codeToHtml(code, {
-      lang,
-      theme: "github-light",
-    });
+self.addEventListener("message", async (event: MessageEvent<TaskRequest>) => {
+  const { taskId, code, lang } = event.data;
 
-    self.postMessage({ taskId, html });
-  },
-);
+  const html = (await highlighter).codeToHtml(code, {
+    lang,
+    theme: "vesper",
+  });
+
+  self.postMessage({ taskId, html } as TaskResponse);
+});

@@ -34,8 +34,8 @@ const eventContent = (event: BrowserEvent): React.ReactNode => {
         </p>
 
         {graphqlQuery ? (
-          <div className="relative border-t border-gray-200">
-            <span className="absolute top-0 right-0 text-xs bg-gray-100 text-gray-500">
+          <div className="relative border-t border-gray-700">
+            <span className="absolute right-0 top-0 bg-white/10 text-xs text-gray-500">
               GraphQL Query
             </span>
 
@@ -47,8 +47,8 @@ const eventContent = (event: BrowserEvent): React.ReactNode => {
           </div>
         ) : null}
         {strippedBody != null ? (
-          <div className="relative border-t border-gray-200">
-            <span className="absolute top-0 right-0 text-xs bg-gray-100 text-gray-500">
+          <div className="relative border-t border-gray-700">
+            <span className="absolute right-0 top-0 bg-white/10 text-xs text-gray-500">
               Request Body
             </span>
 
@@ -64,8 +64,8 @@ const eventContent = (event: BrowserEvent): React.ReactNode => {
           </div>
         ) : null}
         {response != null ? (
-          <div className="relative border-t border-gray-200">
-            <span className="absolute top-0 right-0 text-xs bg-gray-100 text-gray-500">
+          <div className="relative border-t border-gray-700">
+            <span className="absolute right-0 top-0 bg-white/10 text-xs text-gray-500">
               Response Body
             </span>
             <SyntaxHighlight
@@ -82,7 +82,7 @@ const eventContent = (event: BrowserEvent): React.ReactNode => {
   } else if (type === "global_error" || type === "unhandledrejection") {
     const { message } = data;
     return (
-      <pre className="text-red-500 whitespace-pre-wrap max-h-16 overflow-y-auto">
+      <pre className="max-h-16 overflow-y-auto whitespace-pre-wrap text-red-500">
         {message}
       </pre>
     );
@@ -105,7 +105,7 @@ const EventRow_: React.FC<{ event: BrowserEvent }> = ({ event: evt }) => {
         <strong>{evt.type}</strong>
         {evt.duration != null ? <> ({evt.duration}ms)</> : null}
       </p>
-      <div className="font-mono text-xs text-gray-500 p-2 pt-0 border-b border-gray-200">
+      <div className="p-2 pt-0 font-mono text-xs text-gray-500">
         {eventContent(evt)}
       </div>
     </li>

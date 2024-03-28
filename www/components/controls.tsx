@@ -19,7 +19,7 @@ export const Controls: React.FC = () => {
 
   return (
     <>
-      <span className="font-mono text-gray-500 text-lg bg-gray-100 rounded-md py-1 px-3 shadow-inner">
+      <span className="rounded-md bg-gray-100 px-3 py-1 font-mono text-lg text-gray-500 shadow-inner">
         <Timer
           givenElapsedMs={test_duration_ms ?? null}
           paused={status !== "running"}
@@ -58,7 +58,7 @@ export const Controls: React.FC = () => {
         <>
           <span
             className={cn(
-              "text-md capitalize rounded-full px-3 py-1 flex items-center",
+              "text-md flex items-center rounded-full px-3 py-1 capitalize",
               status === "passed"
                 ? "bg-green-500 text-green-100"
                 : "bg-red-500 text-red-100",
@@ -66,9 +66,9 @@ export const Controls: React.FC = () => {
           >
             Test {status}
             {status === "passed" ? (
-              <CheckIcon className="inline-block w-5 h-5 ml-1" />
+              <CheckIcon className="ml-1 inline-block h-5 w-5" />
             ) : (
-              <CloseIcon className="inline-block w-5 h-5 ml-1" />
+              <CloseIcon className="ml-1 inline-block h-5 w-5" />
             )}
           </span>
         </>
@@ -85,7 +85,9 @@ export const Controls: React.FC = () => {
 
       <div className="flex-1" />
 
-      <Button onClick={() => sendCommand("exit")}>Exit</Button>
+      <Button colorScheme="outline" onClick={() => sendCommand("exit")}>
+        Exit
+      </Button>
     </>
   );
 };

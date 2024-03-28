@@ -17,7 +17,7 @@ export const StepRow: React.FC<{
   const ms = step.start_at && step.end_at ? step.end_at - step.start_at : null;
 
   let icon: React.ReactNode = null;
-  let textClass = "text-gray-600";
+  let textClass = "text-current";
 
   const iconShared = "inline-block w-5 h-5 ml-1";
   if (step.status === "passed") {
@@ -28,7 +28,7 @@ export const StepRow: React.FC<{
     textClass = "text-red-400";
   } else if (step.status === "running") {
     icon = (
-      <LoaderIcon className={`${iconShared} text-gray-500 animate-spin`} />
+      <LoaderIcon className={`${iconShared} animate-spin text-gray-500`} />
     );
     textClass = "text-blue-500";
   } else if (step.status === "paused") {
@@ -41,7 +41,7 @@ export const StepRow: React.FC<{
   return (
     <li
       data-step-index={step.index}
-      className="group relative p-2 text-sm border-b border-gray-200 flex items-start hover:bg-gray-100 cursor-pointer"
+      className="group relative flex cursor-pointer items-start p-2 text-sm hover:bg-slate-600"
       onMouseEnter={() => setHover(step.index)}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -51,25 +51,25 @@ export const StepRow: React.FC<{
       onMouseLeave={() => setHover(null)}
     >
       <p className="flex-1">
-        <span className="text-gray-400 w-6 inline-block">
+        <span className="inline-block w-6 text-slate-500">
           {step.index + 1}.
         </span>
         {Array.from({ length: step.block_depth }).map((_, i) => (
-          <span key={i} className="text-gray-400">
+          <span key={i} className="text-slate-400">
             ↳
           </span>
         ))}
         <span className={cn("font-mono", textClass)}>{step.as_string}</span>
         {icon}
         {pauseAtStep ? (
-          <GoToHereIcon className="inline-block w-5 h-5 text-yellow-500 ml-1" />
+          <GoToHereIcon className="ml-1 inline-block h-5 w-5 text-yellow-500" />
         ) : null}
         {ms != null ? (
-          <span className="text-gray-400 ml-1">({ms}ms)</span>
+          <span className="ml-1 text-slate-400">({ms}ms)</span>
         ) : null}
       </p>
 
-      <div className="hidden group-hover:block absolute top-1 right-4">
+      <div className="absolute right-4 top-1 hidden group-hover:block">
         {actions}
       </div>
 
@@ -78,7 +78,7 @@ export const StepRow: React.FC<{
           target="_blank"
           rel="noopener noreferrer"
           href={step.permalink}
-          className="text-gray-600 text-xs hover:underline"
+          className="text-xs hover:underline"
           title={`Open in ${step.permalink.match(/^(\w+):/)?.[1] ?? "editor"}`}
         >
           🔗

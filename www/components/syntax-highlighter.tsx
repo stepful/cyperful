@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { removeLeadingSpace } from "~/lib/utils/string";
 
+import type { TaskRequest, TaskResponse } from "./syntax-highlighter-worker";
 import SyntaxHighlighterWorker from "./syntax-highlighter-worker?worker";
 
 const worker = new SyntaxHighlighterWorker();
@@ -11,18 +12,18 @@ const highlight = async (code: string, lang: string) => {
   const taskId = taskIdCounter++;
 
   return new Promise<string>((resolve) => {
-    const cb = (event: MessageEvent) => {
+    const cb = (event: MessageEvent<TaskResponse>) => {
       if (event.data.taskId === taskId) {
         resolve(event.data.html);
         worker.removeEventListener("message", cb);
       }
     };
     worker.addEventListener("message", cb);
-    worker.postMessage({ taskId, code, lang });
+    worker.postMessage({ taskId, code, lang } as TaskRequest);
   });
 };
 
-const QUERY_KEYS = [
+const GQL_QUERY_KEYS = [
   "query",
   // any others?
 ] as const;
@@ -32,7 +33,7 @@ export const inspectRequestBody = (url: string, body: unknown) => {
     body != null &&
     typeof body === "object"
   ) {
-    for (const queryKey of QUERY_KEYS) {
+    for (const queryKey of GQL_QUERY_KEYS) {
       const queryValue = queryKey in body ? body[queryKey] : null;
       if (
         typeof queryValue === "string" &&
@@ -77,7 +78,7 @@ export const SyntaxHighlight: React.FC<{
   }, []);
 
   return (
-    <div className={clsx("whitespace-pre-wrap overflow-auto", className)}>
+    <div className={clsx("overflow-auto whitespace-pre-wrap", className)}>
       {renderedHtml != null ? (
         <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />
       ) : (

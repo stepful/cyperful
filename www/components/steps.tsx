@@ -49,18 +49,18 @@ const Steps_: React.FC = () => {
   const failedStepI = steps.findIndex((s) => s.status === "failed");
 
   return (
-    <div className="bg-gray-50 flex-1">
-      <p className="bg-gray-100 p-2 text-gray-600 text-sm font-mono">
+    <div className="flex-1 border-r border-stone-700">
+      <p className="border-b border-stone-700 bg-stone-800 p-2 font-mono text-sm">
         {test_suite}:
         <br />
         &nbsp;&nbsp;{test_name}
       </p>
-      <ol className="border-t border-gray-200">
+      <ol className="shadow *:border-b *:border-stone-800">
         {steps?.map((step, i) => {
           const showError =
             test_error != null &&
             step.index === (failedStepI === -1 ? 0 : failedStepI) ? (
-              <pre className="font-mono text-sm p-2 border-b border-gray-200 whitespace-pre-wrap text-red-500">
+              <pre className="whitespace-pre-wrap border-b border-stone-700 p-2 font-mono text-sm text-red-500">
                 <strong>Test failure:</strong>
                 <br />
                 {test_error}

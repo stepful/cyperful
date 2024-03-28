@@ -29,14 +29,16 @@ const ScenarioFrame_ = () => {
   const showingHistoryRecording = useHistoryRecording((s) => s.showing);
 
   return (
-    <div className="relative h-full p-2 bg-[#121b2e]">
+    <div className="relative h-full p-2">
       <div
-        className="absolute top-0 left-0 w-full h-full opacity-50"
+        className="absolute left-0 top-0 h-full w-full"
         style={{
-          // gray stripes
-          backgroundColor: "#9ca3af1a",
+          backgroundColor: "#0F0F12",
+          // @ts-expect-error css var
+          "--stripe-color": "#2E2A26",
+          // diagonal stripes:
           backgroundImage:
-            "linear-gradient(135deg,#6b728080 10%,#0000 0,#0000 50%,#6b728080 0,#6b728080 60%,#0000 0,#0000)",
+            "linear-gradient(135deg,var(--stripe-color) 10%,#0000 0,#0000 50%,var(--stripe-color) 0,var(--stripe-color) 60%,#0000 0,#0000)",
           backgroundSize: "7.07px 7.07px",
         }}
       />
@@ -48,7 +50,7 @@ const ScenarioFrame_ = () => {
             id="scenario-frame"
             title="scenario"
             className={clsx(
-              "absolute top-0 left-0",
+              "absolute left-0 top-0",
               showingHistoryRecording && "invisible",
             )}
             style={{
@@ -85,8 +87,8 @@ const App: React.FC = () => {
       fallback={(error) => {
         return (
           <Layout>
-            <div className="bg-gray-50 p-4 m-4 rounded shadow">
-              <h2 className="text-lg font-bold mb-2 text-red-500">
+            <div className="m-4 rounded border border-slate-400 bg-slate-700 p-4 shadow">
+              <h2 className="mb-2 text-lg font-bold text-red-500">
                 Cyperful Error:
               </h2>
               <pre className="whitespace-pre-wrap">{error.toString()}</pre>

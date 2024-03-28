@@ -48,15 +48,15 @@ const SeekBar: React.FC<{
   const ratio = duration != null ? (seekTime ?? 0) / duration : 0;
 
   return (
-    <div className="rounded-full h-2.5 bg-slate-950 border border-slate-800 shadow-md absolute bottom-1 left-1 right-1">
+    <div className="absolute bottom-1 left-1 right-1 h-2.5 rounded-full border border-slate-800 bg-slate-950 shadow-md">
       <div
-        className="rounded-full h-full bg-green-500 transition-[width] duration-100"
+        className="h-full rounded-full bg-green-500 transition-[width] duration-100"
         style={{ width: `${ratio * 100.0}%` }}
       />
       {/* Tooltip with time */}
       {seekTime != null && duration != null && (
         <div
-          className="absolute top-0 left-0 right-0 text-xs text-center"
+          className="absolute left-0 right-0 top-0 text-center text-xs"
           style={{ transform: "translateY(-120%)" }}
         >
           {seekTime.toFixed(2)} / {duration.toFixed(2)}s
@@ -126,7 +126,7 @@ const HistoryViewer_: React.FC<{
       <div
         className={clsx(
           !hoveredStepStartAt && "invisible",
-          "absolute top-0 left-0 w-full h-full overflow-hidden",
+          "absolute left-0 top-0 h-full w-full overflow-hidden",
           "pointer-events-none",
         )}
       >

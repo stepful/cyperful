@@ -23,6 +23,7 @@
     "lodash-es": "^4.17.21",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-tailwindcss": "^0.5.13",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
