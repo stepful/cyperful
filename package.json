@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 3005",
     "watch": "vite build --watch",
     "build:www": "rm -rf public/assets && vite build",
     "build:scripts": "vite build -c vite-scripts.config.ts",

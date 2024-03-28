@@ -14,4 +14,11 @@ export default defineConfig({
       "~/": "/",
     },
   },
+  server: {
+    hmr: {
+      // our reverse proxy doesn't support websockets
+      // https://vitejs.dev/config/server-options.html#server-hmr
+      port: 3006,
+    },
+  },
 });

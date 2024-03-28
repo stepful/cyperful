@@ -1,4 +1,5 @@
 require "webrick/websocket"
+require "webrick/httpproxy"
 
 # fix for: webrick-websocket incorrectly assumes `Upgrade` header is always present
 module FixWebrickWebsocketServer
@@ -34,9 +35,16 @@ class Cyperful::UiServer
     @server =
       WEBrick::Websocket::HTTPServer.new(
         Port: @port,
-        DocumentRoot: File.join(Cyperful::ROOT_DIR, "public"),
         Logger: WEBrick::Log.new("/dev/null"),
         AccessLog: [],
+        **unless Cyperful::DEV_MODE
+          {
+            DocumentRoot: File.join(Cyperful::ROOT_DIR, "public"),
+            DocumentRootOptions: {
+              FancyIndexing: false,
+            },
+          }
+        end || {},
       )
 
     notify_queue = @notify_queue
@@ -118,6 +126,10 @@ class Cyperful::UiServer
       res["Content-Type"] = "application/json"
       res.status = 200
     end
+
+    if Cyperful::DEV_MODE
+      @server.mount("/", ReverseProxy, target_url: "http://localhost:3005")
+    end
   end
 
   def start_async
@@ -133,5 +145,38 @@ class Cyperful::UiServer
     @thread&.kill
 
     @server.shutdown
+  end
+
+  # super naive reverse proxy
+  class ReverseProxy < WEBrick::HTTPServlet::AbstractServlet
+    def initialize(server, config = {})
+      super
+      @target_url = config.fetch(:target_url)
+      @forward_headers = config[:forward_headers] || ["accept"]
+    end
+
+    def do_GET(request, response)
+      # Target server URL
+      target_uri = URI(@target_url)
+      target_uri.path = request.path
+      target_uri.query = request.query_string if request.query_string
+
+      # Create a new request to the target server with the original request path
+      target_request = Net::HTTP::Get.new(target_uri)
+      @forward_headers.each do |header|
+        target_request[header] = request[header]
+      end
+
+      # Send the request to the target server
+      target_response =
+        Net::HTTP.start(target_uri.host, target_uri.port) do |http|
+          http.request(target_request)
+        end
+
+      # Set the response from the target server as the response to send back to the client
+      response.status = target_response.code.to_i
+      response["Content-Type"] = target_response["content-type"]
+      response.body = target_response.body
+    end
   end
 end

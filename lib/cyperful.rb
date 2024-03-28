@@ -4,6 +4,10 @@ require "listen"
 module Cyperful
   ROOT_DIR = File.expand_path("..", __dir__)
 
+  # Add `CYPERFUL_DEV=1` to use the Vite dev hot-reloading server
+  # instead of the pre-built files in `public/`
+  DEV_MODE = !!ENV["CYPERFUL_DEV"]
+
   @current = nil
 
   class Config < Struct.new(
