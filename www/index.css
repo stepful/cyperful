@@ -32,3 +32,12 @@
 .Logo g:nth-child(4) {
   animation-duration: 4000ms;
 }
+
+.text-shadow-outline {
+  --shadow-color: white;
+  text-shadow:
+    1px 1px 0px var(--shadow-color),
+    -1px -1px 0px var(--shadow-color),
+    -1px 1px 0px var(--shadow-color),
+    1px -1px 0px var(--shadow-color);
+}

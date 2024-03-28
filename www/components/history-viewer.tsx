@@ -56,7 +56,7 @@ const SeekBar: React.FC<{
       {/* Tooltip with time */}
       {seekTime != null && duration != null && (
         <div
-          className="absolute left-0 right-0 top-0 text-center text-xs"
+          className="text-shadow-outline absolute left-0 right-0 top-0 text-center text-xs text-black"
           style={{ transform: "translateY(-120%)" }}
         >
           {seekTime.toFixed(2)} / {duration.toFixed(2)}s
