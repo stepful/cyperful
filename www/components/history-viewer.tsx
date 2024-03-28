@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { clamp } from "lodash-es";
-import { memo, useLayoutEffect, useRef } from "react";
+import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { useHistoryRecording } from "~/lib/history-recording";
 import { type VideoResult } from "~/lib/video";
 
@@ -42,10 +42,11 @@ const renderVideoDimensions = (
 };
 
 const SeekBar: React.FC<{
+  // in milliseconds
   seekTime: number | null;
   duration: number | null;
 }> = ({ seekTime, duration }) => {
-  const ratio = duration != null ? (seekTime ?? 0) / duration : 0;
+  const ratio = duration ? (seekTime ?? 0) / duration : 0;
 
   return (
     <div className="absolute bottom-1 left-1 right-1 h-2.5 rounded-full border border-slate-800 bg-slate-950 shadow-md">
@@ -56,10 +57,10 @@ const SeekBar: React.FC<{
       {/* Tooltip with time */}
       {seekTime != null && duration != null && (
         <div
-          className="text-shadow-outline absolute left-0 right-0 top-0 text-center text-xs text-black"
-          style={{ transform: "translateY(-120%)" }}
+          className="text-shadow-outline absolute right-0 right-1/2 top-0 text-right text-xs text-black"
+          style={{ transform: "translate(40px, -120%)" }}
         >
-          {seekTime.toFixed(2)} / {duration.toFixed(2)}s
+          {(seekTime / 1000.0).toFixed(2)} / {(duration / 1000.0).toFixed(2)}s
         </div>
       )}
     </div>
@@ -75,7 +76,7 @@ const getVideoElDuration = (videoEl: HTMLVideoElement | null) => {
     console.warn("Invalid video duration:", dur);
     return null;
   }
-  return dur;
+  return dur * 1000.0;
 };
 
 const HistoryViewer_: React.FC<{
@@ -96,31 +97,33 @@ const HistoryViewer_: React.FC<{
     ? hoveredStep?.start_at ?? null
     : null;
 
-  const videoDuration =
-    getVideoElDuration(videoElRef.current) ?? videoResult?.duration ?? null;
+  const videoDuration = useMemo(() => {
+    const estimatedDuration = videoResult?.duration;
+    if (!estimatedDuration) return null; // i.e. we didn't finish recording
 
-  const HACK_PADDING = 20;
-  const videoSeekTime =
+    const actualDuration = getVideoElDuration(videoElRef.current);
+    return actualDuration ?? estimatedDuration;
+  }, [videoResult]);
+
+  // TODO: video logic breaks if test was paused and resumed
+  // TODO: video seeking is inaccurate
+  const videoSeekMs =
     videoDuration && hoveredStepStartAt && recordingStartAt
       ? clamp(
-          (hoveredStepStartAt -
-            recordingStartAt +
-            hoveredExtraTime +
-            HACK_PADDING) /
-            1000.0,
+          hoveredStepStartAt - recordingStartAt + hoveredExtraTime,
           0,
           videoDuration,
         )
       : null;
 
   useLayoutEffect(() => {
-    if (videoSeekTime == null) return;
+    if (videoSeekMs == null) return;
     const videoEl = videoElRef.current;
     if (!videoEl) return;
 
     if (!videoEl.paused) videoEl.pause();
-    videoEl.currentTime = videoSeekTime;
-  }, [videoSeekTime]);
+    videoEl.currentTime = videoSeekMs / 1000.0;
+  }, [videoSeekMs]);
 
   return (
     <>
@@ -149,7 +152,7 @@ const HistoryViewer_: React.FC<{
           />
         ) : null}
 
-        <SeekBar seekTime={videoSeekTime} duration={videoDuration} />
+        <SeekBar seekTime={videoSeekMs} duration={videoDuration} />
       </div>
     </>
   );

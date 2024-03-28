@@ -12,8 +12,9 @@ An addon for Ruby Capybara system tests that adds the great DX of tools like Cyp
 - [x] Pause the test at each step and interact with the page
 - [x] View API requests and console logs between steps
 - [x] Auto-restart the test when the source code is modified
-- [x] Take a screenshot at each step so you can view the test at that point in time _(experimental)_
+- [x] Records a video of the test so you can preview the finished test at that point in time _(experimental)_
 - [ ] View and run ANY test suite from the UI _(coming soon)_
+- [ ] Record browser interactions to save as ruby code _(coming later)_
 
 ## Framework support
 
@@ -71,10 +72,14 @@ Cyperful.config.history_recording = false
 ## Development
 
 ```bash
-# in a separate terminal, set up the frontend asset builder
-cd cyperful/www
-yarn watch
+# in a terminal, run the frontend dev server.
+# this will watch for changes and rebuild the frontend
+cd cyperful
+pnpm run dev
 
-# in another terminal, run any test e.g.
-CYPERFUL=1 rails test test/system/my_test.rb
+# in another terminal, run any test.
+# prepend `CYPERFUL_DEV=1` to tell cyperful to look at the
+# dev server instead of the prebuilt frontend assets.
+cd my_test_app
+CYPERFUL_DEV=1 CYPERFUL=1 rails test test/system/my_test.rb
 ```
