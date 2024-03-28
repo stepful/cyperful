@@ -17,10 +17,12 @@ class Cyperful::TestParser
         current_scope
         status_code
         response_headers
+        title
+        query
       ]
 
-  def self.step_at_methods
-    @step_at_methods
+  def self.step_at_methods_set
+    @step_at_methods_set ||= @step_at_methods.to_set
   end
   def self.add_step_at_methods(*mods_or_methods)
     mods_or_methods.each do |mod_or_method|
@@ -78,15 +80,23 @@ class Cyperful::TestParser
 
           block_node = node.children[2]
           [test_method, block_node]
-        else
+
           # e.g. `def test_my_test; ... end`
-          # TODO
+        elsif node.type == :def && node.children[0].to_s.start_with?("test_")
+          test_method = node.children[0]
+
+          block_node = node.children[2]
+          [test_method, block_node]
         end
       end
       .compact
       .to_h do |test_method, block_node|
         out = []
         block_node.children.each { |child| find_test_steps(child, out) }
+
+        # de-duplicate steps by line number
+        # TODO: support multiple steps on the same line. `step_per_line = ...` needs to be refactored
+        out = out.reverse.uniq { |step| step[:line] }.reverse
 
         [test_method, out]
       end
@@ -96,8 +106,10 @@ class Cyperful::TestParser
     return out unless ast&.is_a?(Parser::AST::Node)
 
     if ast.type == :send
-      add_node(ast, out, depth)
-      ast.children.each { |child| find_test_steps(child, out, depth) }
+      # e.g. `assert_equal current_path, "/"` should be a single step, not 2
+      unless add_node(ast, out, depth)
+        ast.children.each { |child| find_test_steps(child, out, depth) }
+      end
     elsif ast.type == :block
       method, _args, child = ast.children
 
@@ -105,6 +117,7 @@ class Cyperful::TestParser
 
       if method.type == :send
         depth += 1 if add_node(method, out, depth)
+
         method.children.each { |child| find_test_steps(child, out, depth) }
       end
 
@@ -115,7 +128,7 @@ class Cyperful::TestParser
   end
 
   private def add_node(node, out, depth)
-    unless Cyperful::TestParser.step_at_methods.include?(node.children[1])
+    unless Cyperful::TestParser.step_at_methods_set.include?(node.children[1])
       return false
     end
 

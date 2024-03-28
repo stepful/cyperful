@@ -61,7 +61,7 @@ class Cyperful::Driver
     @steps =
       Cyperful::TestParser.new(@test_class).steps_per_test.fetch(@test_name)
 
-    editor = "vscode" # TODO: support other editors?
+    editor_scheme = Cyperful.config.editor_scheme
 
     @steps.each_with_index do |step, i|
       step.merge!(
@@ -70,11 +70,14 @@ class Cyperful::Driver
         start_at: nil,
         end_at: nil,
         paused_at: nil,
-        permalink: "#{editor}://file/#{@source_filepath}:#{step.fetch(:line)}",
+        permalink:
+          if editor_scheme && !editor_scheme.empty?
+            "#{editor_scheme}://file/#{@source_filepath}:#{step.fetch(:line)}"
+          end,
       )
     end
 
-    # NOTE: there can be multiple steps per line, this takes the last instance
+    # TODO: support multiple multiple steps per line, this takes only the last instance
     @step_per_line = @steps.index_by { |step| step[:line] }
 
     @current_step = nil

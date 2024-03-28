@@ -15,6 +15,7 @@ module Cyperful
     :auto_run_on_reload,
     :reload_test_files,
     # :reload_source_files, # not implemented yet
+    :editor_scheme,
     :history_recording, # EXPERIMENTAL
     keyword_init: true,
   )
@@ -23,6 +24,7 @@ module Cyperful
         port: 3004,
         auto_run_on_reload: true,
         reload_test_files: true,
+        editor_scheme: "vscode",
         history_recording: true,
       )
     end
