@@ -1,5 +1,29 @@
 require "action_dispatch/system_testing/driver"
 
+# The Minitest test helper.
+# TODO: support other test frameworks like RSpec
+module Cyperful::SystemTestHelper
+  def setup
+    Cyperful.setup(self.class, self.method_name)
+    super
+  end
+
+  def teardown
+    error = passed? ? nil : failure
+
+    error = error.error if error.is_a?(Minitest::UnexpectedError)
+
+    Cyperful.teardown(error)
+    super
+  end
+
+  # Disable default screenshot on failure b/c we handle them ourselves.
+  # https://github.com/rails/rails/blob/main/actionpack/lib/action_dispatch/system_testing/test_helpers/screenshot_helper.rb#L156
+  def take_failed_screenshot
+    nil
+  end
+end
+
 # we need to override the some Capybara::Session methods because they
 # control the top-level browser window, but we want them
 # to control the iframe instead
@@ -37,33 +61,13 @@ module PrependCapybaraWindow
 end
 Capybara::Window.prepend(PrependCapybaraWindow)
 
-# The Minitest test helper.
-# TODO: support other test frameworks like RSpec
-module Cyperful::SystemTestHelper
-  def setup
-    Cyperful.setup(self.class, self.method_name)
-    super
-  end
-
-  def teardown
-    error = passed? ? nil : failure
-
-    error = error.error if error.is_a?(Minitest::UnexpectedError)
-
-    Cyperful.teardown(error)
-    super
-  end
-
-  # Disable default screenshot on failure b/c we handle them ourselves.
-  # https://github.com/rails/rails/blob/main/actionpack/lib/action_dispatch/system_testing/test_helpers/screenshot_helper.rb#L156
-  def take_failed_screenshot
-    nil
-  end
-end
-
 module PrependSystemTestingDriver
   def initialize(...)
     super(...)
+
+    # SUPER NAIVE way to include the width/height of the sidebar/header
+    # in the new screen size
+    @screen_size = [@screen_size.fetch(0) + 300, @screen_size.fetch(1) + 60]
 
     prev_capabilities = @capabilities
     @capabilities =
@@ -81,6 +85,10 @@ module PrependSystemTestingDriver
         # make sure we're not in headless mode
         driver_opts.args.delete("--headless")
         driver_opts.args.delete("--headless=new")
+
+        # hide the "Chrome is being controlled by automated test software" infobar
+        driver_opts.args.delete("--enable-automation")
+        driver_opts.exclude_switches << "enable-automation"
       end
   end
 end
