@@ -24,6 +24,7 @@ export type ButtonProps = {
   children: React.ReactNode;
   colorScheme?: keyof typeof BUTTON_COLORS;
   "aria-label"?: string;
+  title?: string;
   size?: keyof typeof BUTTON_SIZES;
 };
 

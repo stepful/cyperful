@@ -14,7 +14,7 @@ export const IconButton: React.FC<
   }
 > = ({ icon, ...props }) => {
   return (
-    <Button {...props}>
+    <Button {...props} title={props.title ?? props["aria-label"]}>
       <span className="text-[1.25em]">{icon}</span>
     </Button>
   );

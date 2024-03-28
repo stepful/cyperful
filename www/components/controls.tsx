@@ -19,7 +19,7 @@ export const Controls: React.FC = () => {
 
   return (
     <>
-      <span className="rounded-md bg-gray-100 px-3 py-1 font-mono text-lg text-gray-500 shadow-inner">
+      <span className="flex h-9 items-center rounded-md border-2 border-stone-400 bg-stone-300 px-3 font-mono text-lg text-stone-700 shadow-inner">
         <Timer
           givenElapsedMs={test_duration_ms ?? null}
           paused={status !== "running"}
