@@ -96,11 +96,12 @@ const HistoryViewer_: React.FC<{
     ? hoveredStep?.start_at ?? null
     : null;
 
-  const videoActualDuration = getVideoElDuration(videoElRef.current);
+  const videoDuration =
+    getVideoElDuration(videoElRef.current) ?? videoResult?.duration ?? null;
 
   const HACK_PADDING = 20;
   const videoSeekTime =
-    videoActualDuration && hoveredStepStartAt && recordingStartAt
+    videoDuration && hoveredStepStartAt && recordingStartAt
       ? clamp(
           (hoveredStepStartAt -
             recordingStartAt +
@@ -108,7 +109,7 @@ const HistoryViewer_: React.FC<{
             HACK_PADDING) /
             1000.0,
           0,
-          videoActualDuration,
+          videoDuration,
         )
       : null;
 
@@ -148,7 +149,7 @@ const HistoryViewer_: React.FC<{
           />
         ) : null}
 
-        <SeekBar seekTime={videoSeekTime} duration={videoActualDuration} />
+        <SeekBar seekTime={videoSeekTime} duration={videoDuration} />
       </div>
     </>
   );
