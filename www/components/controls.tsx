@@ -60,8 +60,8 @@ export const Controls: React.FC = () => {
             className={cn(
               "text-md flex items-center rounded-full px-3 py-1 capitalize",
               status === "passed"
-                ? "bg-green-500 text-green-100"
-                : "bg-red-500 text-red-100",
+                ? "border-2 border-green-700 bg-green-600 text-green-100"
+                : "border-2 border-red-600 bg-red-500 text-red-100",
             )}
           >
             Test {status}

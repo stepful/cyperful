@@ -64,9 +64,21 @@ export const safeStringify = (data: unknown): string => {
   }
 };
 
+export type SyntaxHighlightType = "json" | "graphql" | null;
+
+export const selectionAll = (event: React.MouseEvent<HTMLElement>) => {
+  const selection = window.getSelection();
+  if (selection) {
+    const range = document.createRange();
+    range.selectNodeContents(event.currentTarget);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+};
+
 export const SyntaxHighlight: React.FC<{
   content: unknown;
-  type: "graphql" | "json" | null;
+  type: SyntaxHighlightType;
   className?: string;
 }> = ({ content, type, className }) => {
   const [renderedHtml, setRenderedHtml] = useState<string | null>(null);
@@ -78,12 +90,12 @@ export const SyntaxHighlight: React.FC<{
   }, []);
 
   return (
-    <div className={clsx("overflow-auto whitespace-pre-wrap", className)}>
-      {renderedHtml != null ? (
-        <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />
-      ) : (
-        safeStringify(content)
-      )}
-    </div>
+    <div
+      onDoubleClick={selectionAll}
+      className={clsx("overflow-auto whitespace-pre-wrap", className)}
+      {...(renderedHtml != null
+        ? { dangerouslySetInnerHTML: { __html: renderedHtml } }
+        : { children: safeStringify(content) })}
+    />
   );
 };
