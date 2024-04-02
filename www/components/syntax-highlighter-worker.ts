@@ -23,16 +23,23 @@ export type TaskRequest = {
 };
 export type TaskResponse = {
   taskId: number;
-  html: string;
-};
+} & ({ html: string; error?: never } | { error: string; html?: never });
 
 self.addEventListener("message", async (event: MessageEvent<TaskRequest>) => {
-  const { taskId, code, lang } = event.data;
+  const { taskId, code, lang } = event.data || {};
+  if (taskId == null) throw new Error("taskId is required");
 
-  const html = (await highlighter).codeToHtml(code, {
-    lang,
-    theme: "vesper",
-  });
+  try {
+    const html = (await highlighter).codeToHtml(code, {
+      lang,
+      theme: "vesper",
+    });
 
-  self.postMessage({ taskId, html } as TaskResponse);
+    self.postMessage({ taskId, html } as TaskResponse);
+  } catch (error) {
+    self.postMessage({
+      taskId,
+      error: (error as Error).message,
+    } as TaskResponse);
+  }
 });

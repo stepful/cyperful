@@ -11,10 +11,13 @@ let taskIdCounter = 0;
 const highlight = async (code: string, lang: string) => {
   const taskId = taskIdCounter++;
 
-  return new Promise<string>((resolve) => {
+  return new Promise<string>((resolve, reject) => {
     const cb = (event: MessageEvent<TaskResponse>) => {
-      if (event.data.taskId === taskId) {
-        resolve(event.data.html);
+      const data = event.data;
+      if (data.taskId === taskId) {
+        if (data.error != null) reject(new Error(data.error));
+        else resolve(data.html);
+
         worker.removeEventListener("message", cb);
       }
     };
