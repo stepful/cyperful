@@ -6,6 +6,8 @@
 
 An addon for Ruby Capybara system tests that adds the great DX of tools like Cypress.io.
 
+https://github.com/stepful/cyperful/assets/992076/dd1ef39c-98ca-48f3-8c3d-99ae057594e2
+
 ## Features
 
 - [x] View the list of steps in a test, with live updates as the test runs
