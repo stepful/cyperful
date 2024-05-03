@@ -6,8 +6,9 @@ export default defineConfig({
   build: {
     outDir: "../public",
     lib: {
-      entry: ["../frame-agent.ts"],
+      entry: ["../frame-agent"],
       formats: ["es"],
+      fileName: "frame-agent",
     },
   },
   resolve: {
