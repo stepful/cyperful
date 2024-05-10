@@ -26,10 +26,12 @@ Please open a Github issue if you'd like to see support for other test framework
 
 ## Installation
 
-First, install the gem:
+First, install the gem (with require=false):
 
-```bash
-bundle add cyperful
+```Gemfile
+group :test do
+  gem "cyperful", require: false
+end
 ```
 
 In your `application_system_test_case.rb` file, add the following:
