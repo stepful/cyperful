@@ -98,15 +98,5 @@ ActionDispatch::SystemTesting::Driver.prepend(PrependSystemTestingDriver)
 #   Minitest::Test::PASSTHROUGH_EXCEPTIONS << Cyperful::AbstractCommand
 # end
 
-# we need to allow the iframe to be embedded in the cyperful server
-# TODO: use Rack middleware instead to support non-Rails apps
-if defined?(Rails)
-  Rails.application.config.content_security_policy do |policy|
-    policy.frame_ancestors(:self, "localhost:#{Cyperful.config.port}")
-  end
-else
-  warn "Cyperful: Rails not detected, skipping content_security_policy fix.\nThe Cyperful UI may not work correctly."
-end
-
 # fix for: Set-Cookie (SameSite=Lax) doesn't work when within an iframe with host 127.0.0.1
 Capybara.server_host = "localhost"
