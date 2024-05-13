@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.files = Dir["lib/**/*.rb", "public/**/*"]
 
   s.add_dependency("capybara", "~> 3")
+  s.add_dependency("parser", "~> 3")
   s.add_dependency("listen", "~> 3")
   s.add_dependency("webrick-websocket", "~> 0.0.3")
 end
