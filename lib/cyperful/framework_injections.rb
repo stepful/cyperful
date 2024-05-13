@@ -1,29 +1,5 @@
 require "action_dispatch/system_testing/driver"
 
-# The Minitest test helper.
-# TODO: support other test frameworks like RSpec
-module Cyperful::SystemTestHelper
-  def setup
-    Cyperful.setup(self.class, self.method_name)
-    super
-  end
-
-  def teardown
-    error = passed? ? nil : failure
-
-    error = error.error if error.is_a?(Minitest::UnexpectedError)
-
-    Cyperful.teardown(error)
-    super
-  end
-
-  # Disable default screenshot on failure b/c we handle them ourselves.
-  # https://github.com/rails/rails/blob/main/actionpack/lib/action_dispatch/system_testing/test_helpers/screenshot_helper.rb#L156
-  def take_failed_screenshot
-    nil
-  end
-end
-
 # we need to override the some Capybara::Session methods because they
 # control the top-level browser window, but we want them
 # to control the iframe instead
@@ -89,14 +65,13 @@ module PrependSystemTestingDriver
         # hide the "Chrome is being controlled by automated test software" infobar
         driver_opts.args.delete("--enable-automation")
         driver_opts.exclude_switches << "enable-automation"
+
+        pp args: driver_opts.args,
+           exclude_switches: driver_opts.exclude_switches
       end
   end
 end
 ActionDispatch::SystemTesting::Driver.prepend(PrependSystemTestingDriver)
-
-# if defined?(Minitest::Test)
-#   Minitest::Test::PASSTHROUGH_EXCEPTIONS << Cyperful::AbstractCommand
-# end
 
 # fix for: Set-Cookie (SameSite=Lax) doesn't work when within an iframe with host 127.0.0.1
 Capybara.server_host = "localhost"

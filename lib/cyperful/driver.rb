@@ -12,13 +12,20 @@ class Cyperful::Driver
     setup_api_server
   end
 
+  def rspec?
+    defined?(RSpec) && @test_class < RSpec::Core::ExampleGroup
+  end
+
   def set_current_test(test_class, test_name)
     @test_class = test_class
     @test_name = test_name.to_sym
 
     @source_filepath =
-      Object.const_source_location(test_class.name).first ||
-        raise("Could not find source file for #{test_class.name}")
+      if rspec?
+        test_class.metadata.fetch(:absolute_file_path)
+      else
+        Object.const_source_location(test_class.name).first
+      end || raise("Could not find source file for #{test_class.name}")
 
     reset_steps
 
@@ -60,6 +67,8 @@ class Cyperful::Driver
     # TODO: memoize this when there's multiple tests per file
     @steps =
       Cyperful::TestParser.new(@test_class).steps_per_test.fetch(@test_name)
+
+    raise "No steps found in #{@test_class}:#{@test_name}" if @steps.blank?
 
     editor_scheme = Cyperful.config.editor_scheme
 
