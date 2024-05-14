@@ -65,5 +65,6 @@ require "cyperful/commands"
 require "cyperful/test_parser"
 require "cyperful/ui_server"
 require "cyperful/driver"
+require "cyperful/framework_helper"
 require "cyperful/framework_injections"
 require "cyperful/railtie" if defined?(Rails::Railtie)

@@ -2,6 +2,8 @@ require "cyperful"
 
 module Cyperful::Rspec
   def self.configure(rspec_conf)
+    rspec_conf.include(Cyperful::FrameworkHelper)
+
     rspec_conf.before(:example, type: :system) do
       # e.g. class = `RSpec::ExampleGroups::MyTest`
       # e.g. full_description = "my_test can visit root"
@@ -11,7 +13,7 @@ module Cyperful::Rspec
 
     rspec_conf.after(:example, type: :system) do
       example = RSpec.current_example
-      error = example.exception
+      error = example.exception # may be nil
 
       # if error.is_a?(RSpec::Expectations::ExpectationNotMetError)
       #   error = error.error

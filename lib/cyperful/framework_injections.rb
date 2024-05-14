@@ -65,9 +65,6 @@ module PrependSystemTestingDriver
         # hide the "Chrome is being controlled by automated test software" infobar
         driver_opts.args.delete("--enable-automation")
         driver_opts.exclude_switches << "enable-automation"
-
-        pp args: driver_opts.args,
-           exclude_switches: driver_opts.exclude_switches
       end
   end
 end

@@ -3,6 +3,8 @@ require "capybara/minitest"
 
 module Cyperful::Minitest # rubocop:disable Style/ClassAndModuleChildren
   module SystemTestHelper
+    include Cyperful::FrameworkHelper
+
     def setup
       Cyperful.setup(self.class, self.method_name)
       super
@@ -15,12 +17,6 @@ module Cyperful::Minitest # rubocop:disable Style/ClassAndModuleChildren
 
       Cyperful.teardown(error)
       super
-    end
-
-    # Disable default screenshot on failure b/c we handle them ourselves.
-    # https://github.com/rails/rails/blob/main/actionpack/lib/action_dispatch/system_testing/test_helpers/screenshot_helper.rb#L156
-    def take_failed_screenshot
-      nil
     end
   end
 end

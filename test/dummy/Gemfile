@@ -44,8 +44,7 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 
-  # manually load test-frameworks since we support multiple
-  gem "rspec-rails"
+  gem "rspec-rails" # should we require=false this?
 
   gem "cyperful", path: "../..", require: false
 end
