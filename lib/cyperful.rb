@@ -33,11 +33,33 @@ module Cyperful
     @config ||= Config.new
   end
 
+  def self.test_framework
+    @test_framework || raise("Cyperful not set up yet")
+  end
+  def self.rspec?
+    @test_framework == :rspec
+  end
+  def self.minitest?
+    @test_framework == :minitest
+  end
+
   def self.current
     @current
   end
   def self.setup(test_class, test_name)
-    puts "Setting up Cyperful for: #{test_class}##{test_name}"
+    @test_framework =
+      if defined?(RSpec::Core::ExampleGroup) &&
+           test_class < RSpec::Core::ExampleGroup
+        :rspec
+      elsif defined?(ActiveSupport::TestCase) &&
+            test_class < ActiveSupport::TestCase
+        :minitest
+      else
+        raise "Unsupported test framework for class: #{test_class.name}"
+      end
+
+    puts "Setting up Cyperful for: " +
+           (rspec? ? test_name : "#{test_class}##{test_name}")
 
     # must set `Cyperful.current` before calling `async_setup`
     @current ||= Cyperful::Driver.new

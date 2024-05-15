@@ -12,16 +12,12 @@ class Cyperful::Driver
     setup_api_server
   end
 
-  def rspec?
-    defined?(RSpec) && @test_class < RSpec::Core::ExampleGroup
-  end
-
   def set_current_test(test_class, test_name)
     @test_class = test_class
     @test_name = test_name.to_sym
 
     @source_filepath =
-      if rspec?
+      if Cyperful.rspec?
         test_class.metadata.fetch(:absolute_file_path)
       else
         Object.const_source_location(test_class.name).first

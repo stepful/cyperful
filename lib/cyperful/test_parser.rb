@@ -40,19 +40,22 @@ class Cyperful::TestParser
     @test_class = test_class
 
     @source_filepath =
-      if rspec?
+      if Cyperful.rspec?
         test_class.metadata.fetch(:absolute_file_path)
       else
         Object.const_source_location(test_class.name).first
       end
   end
 
-  private def rspec?
-    !!defined?(RSpec) && @test_class < RSpec::Core::ExampleGroup
-  end
-
   def steps_per_test
-    rspec? ? rspec_steps_per_test : minitest_steps_per_test
+    case Cyperful.test_framework
+    when :rspec
+      rspec_steps_per_test
+    when :minitest
+      minitest_steps_per_test
+    else
+      raise "Unsupported test framework: #{Cyperful.test_framework}"
+    end
   end
 
   private def rspec_steps_per_test
