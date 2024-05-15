@@ -1,11 +1,9 @@
-require "parser/current"
-require "capybara/minitest"
+require "parser/current" # TODO: switch to Prism?
 
 class Cyperful::TestParser
   # see docs for methods: https://www.rubydoc.info/github/jnicklas/capybara/Capybara/Session
   @step_at_methods =
-    Capybara::Session::DSL_METHODS.to_set +
-      Capybara::Minitest::Assertions.instance_methods(false) -
+    Capybara::Session::DSL_METHODS -
       # exclude methods that don't have side-effects i.e. don't modify the page:
       %i[
         body
@@ -25,7 +23,7 @@ class Cyperful::TestParser
     @step_at_methods_set ||= @step_at_methods.to_set
   end
   def self.add_step_at_methods(*mods_or_methods)
-    mods_or_methods.each do |mod_or_method|
+    mods_or_methods.flatten.each do |mod_or_method|
       case mod_or_method
       when Module
         @step_at_methods +=
@@ -33,17 +31,81 @@ class Cyperful::TestParser
       when String, Symbol
         @step_at_methods << mod_or_method.to_sym
       else
-        raise "Expected Module or Array of strings/symbols, got #{mod_or_method.class}"
+        raise "Expected Module or string/symbol, got: #{mod_or_method.class.name}"
       end
     end
   end
 
   def initialize(test_class)
     @test_class = test_class
-    @source_filepath = Object.const_source_location(test_class.name).first
+
+    @source_filepath =
+      if Cyperful.rspec?
+        test_class.metadata.fetch(:absolute_file_path)
+      else
+        Object.const_source_location(test_class.name).first
+      end
   end
 
   def steps_per_test
+    case Cyperful.test_framework
+    when :rspec
+      rspec_steps_per_test
+    when :minitest
+      minitest_steps_per_test
+    else
+      raise "Unsupported test framework: #{Cyperful.test_framework}"
+    end
+  end
+
+  private def rspec_steps_per_test
+    ast = Parser::CurrentRuby.parse(File.read(@source_filepath))
+
+    example_per_line =
+      @test_class.examples.to_h do |example|
+        # file_path = example.metadata.fetch(:absolute_file_path)
+        [example.metadata.fetch(:line_number) || -1, example]
+      end
+
+    example_asts =
+      search_nodes(ast) do |node|
+        next nil unless node.type == :block
+
+        # assumption: the block is on the same line as the example, and there's at most one example per line
+        example = example_per_line[node.loc.begin.line]
+        next nil unless example
+
+        # "#{@test_class.name} #{example.description} #{}"
+
+        [example, node]
+      end
+
+    example_asts.to_h do |(example, block_node)|
+      out = []
+      block_node.children.each { |child| find_test_steps(child, out) }
+
+      # de-duplicate steps by line number
+      # TODO: support multiple steps on the same line. `step_per_line = ...` needs to be refactored
+      out = out.reverse.uniq { |step| step[:line] }.reverse
+
+      [example.full_description.to_sym, out]
+    end
+  end
+
+  private def search_nodes(parent, out = [], &block)
+    parent.children.each do |node|
+      next unless node.is_a?(Parser::AST::Node)
+      if (ret = block.call(node))
+        #
+        out << ret
+      else
+        search_nodes(node, out, &block)
+      end
+    end
+    out
+  end
+
+  private def minitest_steps_per_test
     ast = Parser::CurrentRuby.parse(File.read(@source_filepath))
 
     test_class_name = @test_class.name.to_sym
@@ -57,7 +119,7 @@ class Cyperful::TestParser
         end
       end
     unless system_test_class
-      raise "Could not find class #{test_class.name} in #{@source_filepath}"
+      raise "Could not find class #{@test_class.name} in #{@source_filepath}"
     end
 
     (
@@ -76,21 +138,21 @@ class Cyperful::TestParser
           test_string = node.children[0].children[2].children[0]
 
           # https://github.com/rails/rails/blob/66676ce499a32e4c62220bd05f8ee2cdf0e15f0c/activesupport/lib/active_support/testing/declarative.rb#L14C23-L14C61
-          test_method = :"test_#{test_string.gsub(/\s+/, "_")}"
+          test_name = :"test_#{test_string.gsub(/\s+/, "_")}"
 
           block_node = node.children[2]
-          [test_method, block_node]
+          [test_name, block_node]
 
           # e.g. `def test_my_test; ... end`
         elsif node.type == :def && node.children[0].to_s.start_with?("test_")
-          test_method = node.children[0]
+          test_name = node.children[0]
 
           block_node = node.children[2]
-          [test_method, block_node]
+          [test_name, block_node]
         end
       end
       .compact
-      .to_h do |test_method, block_node|
+      .to_h do |test_name, block_node|
         out = []
         block_node.children.each { |child| find_test_steps(child, out) }
 
@@ -98,7 +160,7 @@ class Cyperful::TestParser
         # TODO: support multiple steps on the same line. `step_per_line = ...` needs to be refactored
         out = out.reverse.uniq { |step| step[:line] }.reverse
 
-        [test_method, out]
+        [test_name, out]
       end
   end
 
@@ -122,6 +184,8 @@ class Cyperful::TestParser
       end
 
       children.each { |child| find_test_steps(child, out, depth) }
+    elsif ast.type == :begin || ast.type == :kwbegin || ast.type == :ensure
+      ast.children.each { |child| find_test_steps(child, out, depth) }
     end
 
     out

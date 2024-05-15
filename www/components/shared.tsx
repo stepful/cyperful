@@ -40,12 +40,19 @@ export const Timer: React.FC<{
   }, [paused, givenElapsedMs]);
 
   // const elapsedMs = elapsed ?? overrideElapsed;
-  if (elapsed == null) return <>00.00</>;
+  let seconds;
+  if (elapsed == null) seconds = "00.00";
+  else {
+    seconds = (elapsed / 1000).toFixed(2);
+    if (seconds.length < 5) seconds = "0" + seconds;
+  }
 
-  let seconds = (elapsed / 1000).toFixed(2);
-  if (seconds.length < 5) seconds = "0" + seconds;
-
-  return <>{seconds}</>;
+  return (
+    <>
+      {seconds}
+      <span className="text-stone-500">s</span>
+    </>
+  );
 };
 
 export class ErrorBoundary extends Component<{

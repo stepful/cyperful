@@ -32,6 +32,9 @@ Style/MethodCallWithArgsParentheses:
     - yield
     - require
     - require_relative
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
 Style/AccessModifierDeclarations:
   Enabled: true
   EnforcedStyle: inline
