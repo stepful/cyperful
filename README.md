@@ -20,9 +20,9 @@ https://github.com/stepful/cyperful/assets/992076/dd1ef39c-98ca-48f3-8c3d-99ae05
 
 ## Framework support
 
-🚨 Cyperful is in **BETA** and you will likely encounter issues/bugs! I have only confirmed it works on the default Rails 7.0 testing stack: `Minitest` and `Capybara`.
+🚨 Cyperful is in **BETA** and you will likely encounter issues/bugs! It currently only tested on: Rails 7.1, Ruby 3.2.1, `Minitest`/`RSpec`, `capybara`, and `selenium` with Chrome.
 
-Please open a Github issue if you'd like to see support for other test frameworks (such as RSpec) or any other specific setups.
+Try it out, then please open a Github issue if you'd like to see support for any other specific frameworks/setups.
 
 ## Installation
 
