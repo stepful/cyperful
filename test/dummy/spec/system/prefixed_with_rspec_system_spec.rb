@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "alt init", type: :system do
+RSpec.describe "prefixed with RSpec.", type: :system do
   it "can visit root" do
     visit root_path
 

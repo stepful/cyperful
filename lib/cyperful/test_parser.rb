@@ -184,7 +184,7 @@ class Cyperful::TestParser
       end
 
       children.each { |child| find_test_steps(child, out, depth) }
-    elsif ast.type == :begin
+    elsif ast.type == :begin || ast.type == :kwbegin || ast.type == :ensure
       ast.children.each { |child| find_test_steps(child, out, depth) }
     end
 
