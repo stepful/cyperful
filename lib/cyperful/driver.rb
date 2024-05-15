@@ -362,8 +362,13 @@ class Cyperful::Driver
   end
 
   private def skip_multi_sessions
-    unless Capybara.current_session == @session
-      warn "Skipped Cyperful setup in non-default session: #{Capybara.session_name}"
+    if Capybara.current_session != @session
+      warn "\nSkipped Cyperful setup in non-default session"
+      # for debugging: {
+      #   "current_session.mode": Capybara.current_session.mode,
+      #   "session.mode": @session.mode,
+      #   current_driver: Capybara.current_driver,
+      # }.to_json
       return true
     end
     false

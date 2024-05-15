@@ -11,8 +11,6 @@ require "rspec/rails"
 
 require "capybara/rspec"
 
-Capybara.default_driver = :selenium_chrome
-
 require "cyperful/rspec"
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -32,6 +30,11 @@ require "cyperful/rspec"
 
 RSpec.configure do |config|
   Cyperful::Rspec.configure(config)
+
+  # must use before(:all) to ensure the driver is set up before cyperful
+  config.before(:all, type: :system) do
+    driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+  end
 
   # Remove this line to enable support for ActiveRecord
   config.use_active_record = false
