@@ -126,19 +126,24 @@ class Cyperful::Driver
     Object.const_get(class_name)
   end
 
-  def queue_reset
+  def enqueue_reset
     at_exit do
-      # reload test-suite code on reset (for `setup_file_listener`)
-      # TODO: also reload dependent files
-      # NOTE: run_on_method will fail if test_name also changed
-      @test_class = reload_const(@test_class.name, @source_filepath)
+      if Cyperful.rspec?
+        RSpec.world.reset # private API. this unloads constants and clears examples
+        RSpec::Core::Runner.invoke # this reloads the test suite
+      elsif Cyperful.minitest?
+        # reload test-suite code on reset (for `setup_file_listener`)
+        # TODO: also reload dependent files
+        # NOTE: run_on_method will fail if test_name also changed
+        @test_class = reload_const(@test_class.name, @source_filepath)
 
-      # TODO
-      # if Cyperful.config.reload_source_files && defined?(Rails)
-      #   Rails.application.reloader.reload!
-      # end
+        # TODO
+        # if Cyperful.config.reload_source_files && defined?(Rails)
+        #   Rails.application.reloader.reload!
+        # end
 
-      Minitest.run_one_method(@test_class, @test_name)
+        Minitest.run_one_method(@test_class, @test_name)
+      end
     end
   end
 
@@ -450,7 +455,7 @@ class Cyperful::Driver
 
       @ui_server.notify(nil) # `break` out of the `loop` (see `UiServer#socket_open`)
 
-      queue_reset
+      enqueue_reset
       return
     end
 
@@ -480,7 +485,7 @@ class Cyperful::Driver
     puts "Cyperful teardown complete. Waiting for command..."
     # NOTE: this will raise an `Interrupt` if the user Ctrl+C's here
     command = @step_pausing_queue.deq
-    queue_reset if command == :reset
+    enqueue_reset if command == :reset
   ensure
     @file_listener&.stop
     @file_listener = nil
