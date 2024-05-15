@@ -34,15 +34,42 @@ group :test do
 end
 ```
 
+Follow the instructions for your test framework:
+
+### Minitest
+
 In your `application_system_test_case.rb` file, add the following:
 
 ```ruby
 CYPERFUL = !!ENV["CYPERFUL"]
 
-require "cyperful" if CYPERFUL
+require "cyperful/minitest" if CYPERFUL
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  include Cyperful::SystemTestHelper if CYPERFUL
+  include Cyperful::Minitest::SystemTestHelper if CYPERFUL
+
+  driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+
+  # ...
+end
+```
+
+### RSpec
+
+In your `rails_helper.rb` file, add the following:
+
+```ruby
+CYPERFUL = !!ENV["CYPERFUL"]
+
+require "cyperful/rspec" if CYPERFUL
+
+RSpec.configure do |config|
+  config.before(:example, type: :system) do
+    driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+  end
+
+  # Must be called after `driven_by`
+  Cyperful::RSpec.configure(config) if CYPERFUL
 
   # ...
 end

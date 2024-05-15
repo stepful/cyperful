@@ -1,5 +1,8 @@
 require "cyperful"
 
+# TODO: consider this pattern instead:
+# config.include Cyperful::RSpec::SystemTestHelper, type: :system if CYPERFUL
+
 module Cyperful::Rspec
   def self.configure(rspec_conf)
     rspec_conf.include(Cyperful::FrameworkHelper)
@@ -13,11 +16,7 @@ module Cyperful::Rspec
 
     rspec_conf.after(:example, type: :system) do
       example = RSpec.current_example
-      error = example.exception # may be nil
-
-      # if error.is_a?(RSpec::Expectations::ExpectationNotMetError)
-      #   error = error.error
-      # end
+      error = example.exception # RSpec::Expectations::ExpectationNotMetError | nil
 
       Cyperful.teardown(error)
     end
