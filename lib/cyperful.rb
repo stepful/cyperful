@@ -33,6 +33,10 @@ module Cyperful
     @config ||= Config.new
   end
 
+  def self.logger
+    @logger ||= Cyperful::Logger.new
+  end
+
   def self.test_framework
     @test_framework || raise("Cyperful not set up yet")
   end
@@ -58,8 +62,7 @@ module Cyperful
         raise "Unsupported test framework for class: #{test_class.name}"
       end
 
-    puts "Setting up Cyperful for: " +
-           (rspec? ? test_name : "#{test_class}##{test_name}")
+    logger.puts "init: " + (rspec? ? test_name : "#{test_class}##{test_name}")
 
     # must set `Cyperful.current` before calling `async_setup`
     @current ||= Cyperful::Driver.new
@@ -84,6 +87,7 @@ module Cyperful
 end
 
 require "cyperful/commands"
+require "cyperful/logger"
 require "cyperful/test_parser"
 require "cyperful/ui_server"
 require "cyperful/driver"

@@ -1,6 +1,14 @@
 class Cyperful::Driver
   attr_reader :steps, :pausing
 
+  # delegate
+  private def logger
+    Cyperful.logger
+  end
+  private def config
+    Cyperful.config
+  end
+
   SCREENSHOTS_DIR = File.join(Cyperful::ROOT_DIR, "public/screenshots")
 
   def initialize
@@ -72,7 +80,7 @@ class Cyperful::Driver
 
     raise "No steps found in #{@test_class}:#{@test_name}" if @steps.blank?
 
-    editor_scheme = Cyperful.config.editor_scheme
+    editor_scheme = config.editor_scheme
 
     @steps.each_with_index do |step, i|
       step.merge!(
@@ -128,12 +136,13 @@ class Cyperful::Driver
 
   def enqueue_reset
     at_exit do
-      if Cyperful.rspec?
+      case Cyperful.test_framework
+      when :rspec
         RSpec.configuration.reset # private API. this resets the test reporter
         RSpec.configuration.start_time = RSpec::Core::Time.now # this needs to be reset
         RSpec.world.reset # private API. this unloads constants and clears examples
         RSpec::Core::Runner.invoke # this reloads and starts the test suite
-      elsif Cyperful.minitest?
+      when :minitest
         # reload test-suite code on reset (for `setup_file_listener`)
         # TODO: also reload dependent files
         # NOTE: run_on_method will fail if test_name also changed
@@ -145,6 +154,8 @@ class Cyperful::Driver
         # end
 
         Minitest.run_one_method(@test_class, @test_name)
+      else
+        raise "Unsupported test framework: #{Cyperful.test_framework}"
       end
     end
   end
@@ -179,11 +190,11 @@ class Cyperful::Driver
     #   @source_file_listener = Listen.to(rails_directory) ...
     # end
 
-    if Cyperful.config.reload_test_files
+    if config.reload_test_files
       @file_listener&.stop
       @file_listener =
         Listen.to(test_directory) do |_modified, _added, _removed|
-          puts "Test files changed, resetting test..."
+          logger.puts "Test files changed, resetting test..."
 
           # keep the same pause state after the reload
           self.class.next_run_options = { pause_at_step: @pause_at_step }
@@ -196,13 +207,15 @@ class Cyperful::Driver
   end
 
   def print_steps
-    puts "Found #{@steps.length} steps:"
+    logger.plain("Found #{@steps.length} steps:")
     @steps.each_with_index do |step, i|
-      puts " #{
-             (i + 1).to_s.rjust(2)
-           }.  #{step[:method]}: #{step[:line]}:#{step[:column]}"
+      logger.plain(
+        " #{
+          (i + 1).to_s.rjust(2)
+        }.  #{step[:method]}: #{step[:line]}:#{step[:column]}",
+      )
     end
-    puts
+    logger.plain
   end
 
   # pending (i.e. test hasn't started), paused, running, passed, failed
@@ -285,7 +298,7 @@ class Cyperful::Driver
       @current_step[:end_at] = (Time.now.to_f * 1000.0).to_i
       @current_step[:status] = !error ? "passed" : "failed"
 
-      puts(
+      logger.puts(
         " (#{@current_step[:end_at] - @current_step[:start_at]}ms)#{
           error ? " FAILED" : ""
         }",
@@ -311,7 +324,7 @@ class Cyperful::Driver
   end
 
   def drive_iframe
-    puts "Driving iframe..."
+    logger.puts "Driving iframe..."
 
     # make sure a `within` block doesn't affect these commands
     without_finder_scopes do
@@ -372,7 +385,7 @@ class Cyperful::Driver
 
   private def skip_multi_sessions
     if Capybara.current_session != @session
-      warn "\nSkipped Cyperful setup in non-default session"
+      logger.warn "Skipped setup in non-default session"
       # for debugging: {
       #   "current_session.mode": Capybara.current_session.mode,
       #   "session.mode": @session.mode,
@@ -413,7 +426,7 @@ class Cyperful::Driver
   end
 
   def setup_api_server
-    @ui_server = Cyperful::UiServer.new(port: Cyperful.config.port)
+    @ui_server = Cyperful::UiServer.new(port: config.port)
 
     @cyperful_origin = @ui_server.url_origin
 
@@ -445,7 +458,7 @@ class Cyperful::Driver
     # The server appears to always stop on it's own,
     # so we don't need to stop it within an `at_exit` or `Minitest.after_run`
 
-    puts "Cyperful server started: #{@cyperful_origin}"
+    logger.puts "server started: #{@cyperful_origin}"
   end
 
   def teardown(error = nil)
@@ -453,7 +466,7 @@ class Cyperful::Driver
     @tracepoint = nil
 
     if error&.is_a?(Cyperful::ResetCommand)
-      puts "\nResetting test (ignore any error logs)..."
+      logger.puts "Resetting test (ignore any error logs)..."
 
       @ui_server.notify(nil) # `break` out of the `loop` (see `UiServer#socket_open`)
 
@@ -484,7 +497,7 @@ class Cyperful::Driver
 
     @ui_server.notify(nil) # `break` out of the `loop` (see `UiServer#socket_open`)
 
-    puts "Cyperful teardown complete. Waiting for command..."
+    logger.puts "teardown complete. Waiting for command..."
     # NOTE: this will raise an `Interrupt` if the user Ctrl+C's here
     command = @step_pausing_queue.deq
     enqueue_reset if command == :reset
