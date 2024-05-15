@@ -298,7 +298,7 @@ class Cyperful::Driver
       @current_step[:end_at] = (Time.now.to_f * 1000.0).to_i
       @current_step[:status] = !error ? "passed" : "failed"
 
-      logger.puts(
+      logger.plain(
         " (#{@current_step[:end_at] - @current_step[:start_at]}ms)#{
           error ? " FAILED" : ""
         }",

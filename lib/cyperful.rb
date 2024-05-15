@@ -62,7 +62,7 @@ module Cyperful
         raise "Unsupported test framework for class: #{test_class.name}"
       end
 
-    logger.puts "init: " + (rspec? ? test_name : "#{test_class}##{test_name}")
+    logger.puts "init test: \"#{rspec? ? test_name : "#{test_class}##{test_name}"}\""
 
     # must set `Cyperful.current` before calling `async_setup`
     @current ||= Cyperful::Driver.new
