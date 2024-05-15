@@ -129,8 +129,10 @@ class Cyperful::Driver
   def enqueue_reset
     at_exit do
       if Cyperful.rspec?
+        RSpec.configuration.reset # private API. this resets the test reporter
+        RSpec.configuration.start_time = RSpec::Core::Time.now # this needs to be reset
         RSpec.world.reset # private API. this unloads constants and clears examples
-        RSpec::Core::Runner.invoke # this reloads the test suite
+        RSpec::Core::Runner.invoke # this reloads and starts the test suite
       elsif Cyperful.minitest?
         # reload test-suite code on reset (for `setup_file_listener`)
         # TODO: also reload dependent files
