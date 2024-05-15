@@ -8,6 +8,12 @@ class Cyperful::Driver
 
     @session = Capybara.current_session
     raise "Could not find Capybara session" unless @session
+    unless @session.driver.is_a?(Capybara::Selenium::Driver)
+      raise "Cyperful only supports Selenium, got: #{@session.driver}"
+    end
+    unless @session.driver.browser.browser == :chrome
+      raise "Cyperful only supports Chrome, got: #{@session.driver.browser.browser}"
+    end
 
     setup_api_server
   end

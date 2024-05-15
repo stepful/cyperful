@@ -20,7 +20,7 @@ https://github.com/stepful/cyperful/assets/992076/dd1ef39c-98ca-48f3-8c3d-99ae05
 
 ## Framework support
 
-🚨 Cyperful is in **BETA** and you will likely encounter issues/bugs! It currently only tested on: Rails 7.1, Ruby 3.2.1, `Minitest`/`RSpec`, `capybara`, and `selenium` with Chrome.
+🚨 Cyperful is in **BETA** and you will likely encounter issues/bugs! We currently only support: Rails 7.1, Ruby 3.2.1, `Minitest`/`RSpec`, `capybara`, and `selenium` with Chrome.
 
 Try it out, then please open a Github issue if you'd like to see support for any other specific frameworks/setups.
 
@@ -36,6 +36,26 @@ end
 
 Follow the instructions for your test framework:
 
+### RSpec
+
+In your `rails_helper.rb` file, add the following:
+
+```ruby
+CYPERFUL = !!ENV["CYPERFUL"]
+
+require "cyperful/rspec" if CYPERFUL
+
+RSpec.configure do |config|
+  # make sure we setup the browser-driver BEFORE Cyperful's setup
+  config.prepend_before(:example, type: :system) do
+    # Cyperful only supports Selenium + Chrome
+    driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+  end
+
+  # ...
+end
+```
+
 ### Minitest
 
 In your `application_system_test_case.rb` file, add the following:
@@ -48,28 +68,8 @@ require "cyperful/minitest" if CYPERFUL
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   include Cyperful::Minitest::SystemTestHelper if CYPERFUL
 
+  # Cyperful only supports Selenium + Chrome
   driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
-
-  # ...
-end
-```
-
-### RSpec
-
-In your `rails_helper.rb` file, add the following:
-
-```ruby
-CYPERFUL = !!ENV["CYPERFUL"]
-
-require "cyperful/rspec" if CYPERFUL
-
-RSpec.configure do |config|
-  config.before(:example, type: :system) do
-    driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
-  end
-
-  # Must be called after `driven_by`
-  Cyperful::RSpec.configure(config) if CYPERFUL
 
   # ...
 end
