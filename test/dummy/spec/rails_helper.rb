@@ -29,12 +29,12 @@ require "cyperful/rspec"
 # Rails.root.glob('spec/support/**/*.rb').sort.each { |f| require f }
 
 RSpec.configure do |config|
-  Cyperful::Rspec.configure(config)
-
-  # must use before(:all) to ensure the driver is set up before cyperful
-  config.before(:all, type: :system) do
+  config.before(:example, type: :system) do
     driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
   end
+
+  # Must be called after `driven_by`
+  Cyperful::Rspec.configure(config)
 
   # Remove this line to enable support for ActiveRecord
   config.use_active_record = false
