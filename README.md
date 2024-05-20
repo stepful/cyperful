@@ -47,9 +47,13 @@ require "cyperful/rspec" if CYPERFUL
 
 RSpec.configure do |config|
   # make sure we setup the browser-driver BEFORE Cyperful's setup
+  # Cyperful only supports Selenium + Chrome
+  Capybara.register_driver :selenium_chrome do |app|
+    options = Selenium::WebDriver::Chrome::Options.new(args: ["window-size=1400,1400"])
+    Capybara::Selenium::Driver.new(app, browser: :chrome, options:)
+  end
   config.prepend_before(:example, type: :system) do
-    # Cyperful only supports Selenium + Chrome
-    driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+    driven_by :selenium_chrome
   end
 
   # ...
@@ -69,7 +73,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   include Cyperful::Minitest::SystemTestHelper if CYPERFUL
 
   # Cyperful only supports Selenium + Chrome
-  driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+  Capybara.register_driver :selenium_chrome do |app|
+    options = Selenium::WebDriver::Chrome::Options.new(args: ["window-size=1400,1400"])
+    Capybara::Selenium::Driver.new(app, browser: :chrome, options:)
+  end
+  driven_by :selenium_chrome
 
   # ...
 end
