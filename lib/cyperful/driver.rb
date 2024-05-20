@@ -207,7 +207,7 @@ class Cyperful::Driver
   end
 
   def print_steps
-    logger.plain("Found #{@steps.length} steps:")
+    logger.puts("found #{@steps.length} steps:")
     @steps.each_with_index do |step, i|
       logger.plain(
         " #{
