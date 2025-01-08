@@ -3,3 +3,4 @@ public/
 dist/
 .notes/
 .DS_Store
+.vscode/
