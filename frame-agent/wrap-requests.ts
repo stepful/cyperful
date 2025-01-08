@@ -136,8 +136,7 @@ export const wrapXHR = () => {
   // Override send
   window.XMLHttpRequest.prototype.send = function wrappedSend(body) {
     const meta = (this as unknown as { _requestMeta?: XHRMeta })._requestMeta;
-    const method = meta?.method;
-    const url = meta?.url;
+
     const bodyType = meta?.headers["content-type"];
 
     let parsedBody;
@@ -150,12 +149,14 @@ export const wrapXHR = () => {
             : body;
     } catch {}
 
-    const start = notify("xhr", {
-      method,
-      url,
-      body: parsedBody,
-      bodyType,
-    });
+    const start = meta
+      ? notify("xhr", {
+          method: meta.method,
+          url: meta.url,
+          body: parsedBody,
+          bodyType,
+        })
+      : null;
 
     this.addEventListener("load", async () => {
       if (!start) return;
