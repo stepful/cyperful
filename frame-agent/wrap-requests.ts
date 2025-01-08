@@ -4,7 +4,7 @@ import { notify } from "./notify";
 function tryParseJson(val: unknown) {
   try {
     if (typeof val === "string") return JSON.parse(val);
-  } catch (_err) {
+  } catch {
     return val;
   }
 }

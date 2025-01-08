@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
     "noEmit": true,
@@ -12,16 +12,15 @@
     "skipLibCheck": true,
     "module": "esnext",
     "noUncheckedIndexedAccess": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "types": ["./www/types"],
     "baseUrl": ".",
     "paths": {
       "~/*": ["./www/*"]
     }
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "tmp", "public"]
 }

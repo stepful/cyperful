@@ -4,15 +4,7 @@ import { EMPTY_ARRAY } from "~/lib/utils";
 import { createProvider } from "~/lib/utils/providers";
 import { useWebsocketData } from "~/lib/utils/websocket";
 
-const STATUS_MAP = {
-  pending: { colorClass: "text-gray-500" },
-  paused: { colorClass: "text-yellow-500" },
-  running: { colorClass: "text-blue-500" },
-  passed: { colorClass: "text-green-500" },
-  failed: { colorClass: "text-red-500" },
-};
-
-type StepStatus = keyof typeof STATUS_MAP;
+type StepStatus = "pending" | "paused" | "running" | "passed" | "failed";
 type TestStatus = StepStatus; // same
 
 export type Step = {
@@ -119,10 +111,11 @@ type MessagePayload = Omit<BrowserEvent, "duration"> & {
   start_id?: string;
 };
 
-const isMessagePayload = (data: any): data is MessagePayload =>
-  !!data?.type &&
-  typeof data.type === "string" &&
-  typeof data.timestamp === "number";
+const isMessagePayload = (data: unknown): data is MessagePayload =>
+  data != null &&
+  typeof data === "object" &&
+  typeof (data as { type?: unknown }).type === "string" &&
+  typeof (data as { timestamp?: unknown }).timestamp === "number";
 
 /**
  * Listen to browser events from the iframe.

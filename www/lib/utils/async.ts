@@ -4,7 +4,7 @@
 export class Subject<T = void> {
   private _promise: Promise<T>;
   private _resolve!: (value: T) => void;
-  private _reject!: (reason: any) => void;
+  private _reject!: (reason: unknown) => void;
 
   constructor() {
     this._promise = new Promise<T>((resolve, reject) => {
@@ -18,7 +18,7 @@ export class Subject<T = void> {
     this._resolve(value);
   }
 
-  error(reason: any) {
+  error(reason: unknown) {
     this._reject(reason);
   }
 

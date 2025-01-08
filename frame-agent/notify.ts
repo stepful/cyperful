@@ -42,7 +42,7 @@ export const notify = <
         if (url.origin === window.location.origin) {
           data.url = url.pathname + url.search + url.hash;
         }
-      } catch (_err) {
+      } catch {
         // e.g. invalid URL
       }
     }
@@ -56,7 +56,7 @@ export const notify = <
     };
 
     window.parent.postMessage(evt, CYPERFUL_ORIGIN);
-  } catch (_err) {
+  } catch {
     // e.g. blocked by CORS
     // e.g. invalid payload
   }
