@@ -12,5 +12,5 @@ Gem::Specification.new do |s|
   s.add_dependency("capybara", "~> 3")
   s.add_dependency("parser", "~> 3")
   s.add_dependency("listen", "~> 3")
-  s.add_dependency("webrick-websocket", "~> 0.0.3")
+  s.add_dependency("webrick-websocket", "~> 0.0.4")
 end

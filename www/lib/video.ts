@@ -59,6 +59,7 @@ export class VideoRecorder {
     console.log("[VideoRecorder] started");
 
     mediaRecorder.onerror = (e) => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const { error } = e as ErrorEvent;
       console.error("[VideoRecorder] error:", error);
       this.subject.error(error);

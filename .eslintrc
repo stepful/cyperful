@@ -1,7 +1,0 @@
-{
-  "extends": "@wyattades/eslint-config",
-  "rules": {
-    "import/order": "off",
-    "no-console": "off",
-  },
-}

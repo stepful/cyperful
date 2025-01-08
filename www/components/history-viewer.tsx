@@ -80,7 +80,7 @@ const getVideoElDuration = (videoEl: HTMLVideoElement | null) => {
 };
 
 const HistoryViewer_: React.FC<{
-  containerRef: React.RefObject<HTMLElement>;
+  containerRef: React.RefObject<HTMLElement | null>;
 }> = ({ containerRef }) => {
   const {
     videoResult,
@@ -94,7 +94,7 @@ const HistoryViewer_: React.FC<{
 
   const recordingStartAt = videoRecorder?.startAt ?? null;
   const hoveredStepStartAt = canShowHistory
-    ? hoveredStep?.start_at ?? null
+    ? (hoveredStep?.start_at ?? null)
     : null;
 
   const videoDuration = useMemo(() => {

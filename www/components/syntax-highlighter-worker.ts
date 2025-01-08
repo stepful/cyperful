@@ -1,4 +1,4 @@
-import { getHighlighterCore } from "shiki/core";
+import { createHighlighterCore } from "shiki/core";
 import getWasm from "shiki/wasm";
 
 // import theme from "shiki/themes/github-light.mjs";
@@ -10,7 +10,7 @@ import json from "shiki/langs/json.mjs";
 // override the background color
 theme.colors!["editor.background"] = "transparent";
 
-const highlighter = getHighlighterCore({
+const highlighter = createHighlighterCore({
   themes: [theme],
   langs: [graphql, json],
   loadWasm: getWasm,

@@ -498,7 +498,9 @@ class Cyperful::Driver
     @ui_server.notify(nil) # `break` out of the `loop` (see `UiServer#socket_open`)
 
     logger.puts "teardown complete. Waiting for command..."
-    # NOTE: this will raise an `Interrupt` if the user Ctrl+C's here
+
+    # NOTE: MiniTest will raise an `Interrupt` if the user Ctrl+C's here
+    # TODO: can't seem to capture Rspec Ctrl+C's :(
     command = @step_pausing_queue.deq
     enqueue_reset if command == :reset
   ensure

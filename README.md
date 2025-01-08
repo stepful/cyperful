@@ -100,7 +100,17 @@ You can set these options on the `Cyperful.config` object after requiring the ge
 Cyperful.config.history_recording = false
 ```
 
-## Development
+---
+
+## Contributing
+
+1. Fork this repo
+2. Create your feature branch (git checkout -b my-new-feature)
+3. Commit your changes (git commit -am 'Add some feature')
+4. Push to the branch (git push origin my-new-feature)
+5. Create a new Pull Request
+
+### Run the dev server
 
 ```bash
 # in a terminal, run the frontend dev server.
@@ -108,9 +118,15 @@ Cyperful.config.history_recording = false
 cd cyperful
 pnpm run dev
 
-# in another terminal, run any test.
+# in another terminal, run any Rspec/Minitest test
 # prepend `CYPERFUL_DEV=1` to tell cyperful to look at the
 # dev server instead of the prebuilt frontend assets.
-cd my_test_app
-CYPERFUL_DEV=1 CYPERFUL=1 rails test test/system/my_test.rb
+cd test/dummy
+CYPERFUL_DEV=1 CYPERFUL=1 rails test test/system/basic_system_test.rb
+
+# Or, run your own tests in your own app.
+cd path/to/your_app
+bundle config local.cyperful path/to/cyperful_repo
+bundle install
+CYPERFUL_DEV=1 CYPERFUL=1 rspec path/to/my_system_spec.rb
 ```

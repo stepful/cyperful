@@ -25,7 +25,7 @@ const emptyCtx = Symbol("empty ctx");
 export const createProvider = <
   CtxValue,
   // optional provider props
-  ProviderProps extends Record<string, any> | void,
+  ProviderProps extends Record<string, unknown> | void,
 >(
   /** Called once when provider mounts. `args` are props passed the this provider (optional). */
   useInitProvider: (args: ProviderProps) => CtxValue,

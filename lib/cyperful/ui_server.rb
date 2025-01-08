@@ -1,15 +1,6 @@
 require "webrick/websocket"
 require "webrick/httpproxy"
 
-# fix for: webrick-websocket incorrectly assumes `Upgrade` header is always present
-module FixWebrickWebsocketServer
-  def service(req, res)
-    req.header["upgrade"] = [""] if req["upgrade"].nil?
-    super
-  end
-end
-WEBrick::Websocket::HTTPServer.prepend(FixWebrickWebsocketServer)
-
 class Cyperful::UiServer
   def initialize(port:)
     @port = port
