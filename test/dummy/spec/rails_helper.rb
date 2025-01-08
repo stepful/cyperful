@@ -11,7 +11,8 @@ require "rspec/rails"
 
 require "capybara/rspec"
 
-require "cyperful/rspec"
+CYPERFUL = !!ENV["CYPERFUL"]
+require "cyperful/rspec" if CYPERFUL
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are

@@ -1,4 +1,5 @@
 import type { EventPayloads } from "~/lib/data";
+import { getConfig } from "./config";
 
 type WatcherEvent<
   Finished extends boolean = false,
@@ -25,7 +26,7 @@ export const notify = <
     : Partial<EventPayloads[Type]>,
   startEvent: StartEvent = null as StartEvent,
 ): WatcherEvent<boolean, Type> | null => {
-  const { CYPERFUL_ORIGIN } = __CYPERFUL_CONFIG__;
+  const { CYPERFUL_ORIGIN } = getConfig();
 
   let evt: WatcherEvent<boolean, Type> | null = null;
   try {

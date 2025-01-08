@@ -1,20 +1,17 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
+import { getConfig } from "./config";
 import { notify } from "./notify";
 import { wrapFetch, wrapXHR } from "./wrap-requests";
 
 declare global {
-  let __CYPERFUL_CONFIG__: {
-    CYPERFUL_ORIGIN: string;
-  };
-
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Window {
     __cyperfulAgentInitialized?: boolean;
   }
 }
 
-(() => {
+const init = () => {
   if (window.__cyperfulAgentInitialized) return;
   window.__cyperfulAgentInitialized = true;
 
@@ -23,12 +20,7 @@ declare global {
 
   log("Loading...");
 
-  const { CYPERFUL_ORIGIN } = __CYPERFUL_CONFIG__ || {};
-
-  if (!CYPERFUL_ORIGIN) {
-    log("No __CYPERFUL_CONFIG__ found");
-    return;
-  }
+  const { CYPERFUL_ORIGIN } = getConfig();
 
   if (window.location.origin === CYPERFUL_ORIGIN) {
     log("Ignoring parent frame (Why are we here?)");
@@ -37,23 +29,6 @@ declare global {
 
   wrapFetch();
   wrapXHR();
-
-  // capture console logs
-  for (const level of [
-    "log",
-    "error",
-    "warn",
-    "info",
-    "dir",
-    "debug",
-  ] as const) {
-    const original = console[level];
-    if (!original) continue;
-    console[level] = (...args) => {
-      original.apply(console, args);
-      notify("log", { level, args });
-    };
-  }
 
   // capture global errors
   window.addEventListener("error", (event) => {
@@ -81,7 +56,30 @@ declare global {
     });
   };
 
+  // capture console logs
+  for (const level of [
+    "log",
+    "error",
+    "warn",
+    "info",
+    "dir",
+    "debug",
+  ] as const) {
+    const original = console[level];
+    if (!original) continue;
+    console[level] = (...args) => {
+      original.apply(console, args);
+      notify("log", { level, args });
+    };
+  }
+
   log("Loaded.");
-})();
+};
+
+try {
+  init();
+} catch (err) {
+  console.error("Cyperful Agent failed to load", err);
+}
 
 export {};

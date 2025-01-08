@@ -32,12 +32,15 @@ export const wrapFetch = () => {
     const body = options.body;
     const reqHeaders = new Headers(options.headers);
     const bodyType = reqHeaders.get("content-type") || undefined;
-    const parsedBody =
-      body instanceof FormData
-        ? formDataToObject(body)
-        : bodyType?.match(/[+/]json\b/)
-          ? tryParseJson(body)
-          : body;
+    let parsedBody;
+    try {
+      parsedBody =
+        body instanceof FormData
+          ? formDataToObject(body)
+          : bodyType?.match(/[+/]json\b/)
+            ? tryParseJson(body)
+            : body;
+    } catch {}
 
     const start = notify("fetch", {
       method,
@@ -48,35 +51,42 @@ export const wrapFetch = () => {
 
     const promise = originalFetch(...args);
     promise
-      .then(async (response) => {
-        const ct = response.headers.get("content-type");
-        const resBody = ct?.match(/[+/]json\b/)
-          ? await response.clone().json()
-          : ct?.match(/\btext[+/]/)
-            ? await response.clone().text()
-            : `[[ Unhandled content-type: ${ct || "<empty>"} ]]`;
+      .then(async (initResponse) => {
+        const ct = initResponse.headers.get("content-type") || undefined;
+
+        let resBody;
+        try {
+          const response = initResponse.clone();
+          // form data:
+          if (ct?.match(/\bform-data\b/))
+            resBody = formDataToObject(await response.formData());
+          if (ct?.match(/[+/]json\b/))
+            resBody = (await response.json()) as Record<string, unknown>;
+          else if (ct?.match(/\btext[+/]/)) resBody = await response.text();
+          else resBody = `[[ Unhandled content-type: ${ct || "<empty>"} ]]`;
+        } catch {}
 
         if (start)
           notify(
             "fetch:finished",
             {
-              status: response.status,
-              responseType: ct || undefined,
+              status: initResponse.status,
+              responseType: ct,
               response: resBody,
             },
             start,
           );
       })
       .catch((err) => {
-        if (start)
-          notify(
-            "fetch:finished",
-            {
-              status: 0,
-              response: `[caught error] ${(err as Error).message || "Unknown error"}`,
-            },
-            start,
-          );
+        if (!start) return;
+        notify(
+          "fetch:finished",
+          {
+            status: 0,
+            response: `[caught error] ${(err as Error).message || "Unknown error"}`,
+          },
+          start,
+        );
       });
     return promise;
   };
@@ -130,12 +140,15 @@ export const wrapXHR = () => {
     const url = meta?.url;
     const bodyType = meta?.headers["content-type"];
 
-    const parsedBody =
-      body instanceof FormData
-        ? formDataToObject(body)
-        : bodyType?.match(/[+/]json\b/)
-          ? tryParseJson(body)
-          : body;
+    let parsedBody;
+    try {
+      parsedBody =
+        body instanceof FormData
+          ? formDataToObject(body)
+          : bodyType?.match(/[+/]json\b/)
+            ? tryParseJson(body)
+            : body;
+    } catch {}
 
     const start = notify("xhr", {
       method,
@@ -144,29 +157,41 @@ export const wrapXHR = () => {
       bodyType,
     });
 
-    this.addEventListener("load", () => {
-      if (start)
-        notify(
-          "xhr:finished",
-          {
-            status: this.status,
-            response: this.response,
-            responseType: this.getResponseHeader("content-type") || undefined,
-          },
-          start,
-        );
+    this.addEventListener("load", async () => {
+      if (!start) return;
+
+      const ct = this.getResponseHeader("content-type") || undefined;
+
+      let resBody;
+      try {
+        resBody = ct?.match(/[+/]json\b/)
+          ? await this.response.clone().json()
+          : ct?.match(/\btext[+/]/)
+            ? await this.response.clone().text()
+            : `[[ Unhandled content-type: ${ct || "<empty>"} ]]`;
+      } catch {}
+
+      notify(
+        "xhr:finished",
+        {
+          status: this.status,
+          response: resBody,
+          responseType: ct,
+        },
+        start,
+      );
     });
 
     this.addEventListener("error", () => {
-      if (start)
-        notify(
-          "xhr:finished",
-          {
-            status: 0,
-            response: `[caught error] ${this.status ?? 0} - ${this.statusText || "Unknown error"}`,
-          },
-          start,
-        );
+      if (!start) return;
+      notify(
+        "xhr:finished",
+        {
+          status: 0,
+          response: `[caught error] ${this.status ?? 0} - ${this.statusText || "Unknown error"}`,
+        },
+        start,
+      );
     });
 
     return originalSend.apply(this, [body]);

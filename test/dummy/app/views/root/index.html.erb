@@ -1,10 +1,42 @@
 <h1></h1>
 
+<button id="fetch-button">Data via fetch</button>
+<button id="xhr-button">Data via XHR</button>
+
+<div id="response"></div>
+
 <script>
-  // Delayed render to make sure JS is working
   window.addEventListener('load', () => {
+    // Delayed render to make sure JS is working
     setTimeout(() => {
       document.querySelector('h1').innerText = 'Hello, World!';
     }, 200);
+ 
+    document.getElementById('fetch-button').addEventListener('click', () => {
+      fetch('/some_data.json', {
+        method: 'POST',
+        body: JSON.stringify({ numbers: [1, 2, 3] }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('fetch response:', data);
+          document.getElementById('response').textContent = JSON.stringify(data);
+        });
+    });
+
+    document.getElementById('xhr-button').addEventListener('click', () => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/some_data', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify({ numbers: [1, 2, 3] }));
+      xhr.onload = () => {
+        const data = JSON.parse(xhr.responseText);
+        console.log('xhr response:', data);
+        document.getElementById('response').textContent = JSON.stringify(data);
+      };
+    });
   });
 </script>
