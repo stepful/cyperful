@@ -54,9 +54,31 @@ module PrependSystemTestingDriver
 
         # this assumes Selenium and Chrome:
 
+        # all chrome flags: https://peter.sh/experiments/chromium-command-line-switches
+        # chrome flags for tooling: https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md
+
+        # set the min flags to make cyperful functional:
+
         # so user isn't prompted when we start recording video w/ MediaStream
         driver_opts.add_argument("--auto-accept-this-tab-capture")
         driver_opts.add_argument("--use-fake-ui-for-media-stream")
+
+        if driver_opts.args.none? { |arg| arg.include?("--disable-features=") }
+          # credit: https://github.com/krausest/js-framework-benchmark/discussions/1682
+          disabled_features = %w[
+            InterestFeedContentSuggestions
+            IPH_DemoMode
+            BackForwardCache
+            OptimizationHints
+            OptimizationHintsFetching
+            OptimizationTargetPrediction
+            PrivacySandboxSettings4
+            Translate
+          ]
+          driver_opts.add_argument(
+            "--flag-switches-begin --disable-features=#{disabled_features.join(",")} --flag-switches-end",
+          )
+        end
 
         # make sure we're not in headless mode
         driver_opts.args.delete("--headless")
