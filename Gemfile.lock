@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cyperful (0.3.0)
+    cyperful (0.3.1)
       capybara (~> 3)
       listen (~> 3)
       parser (~> 3)
