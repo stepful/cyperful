@@ -19,6 +19,36 @@ function formDataToObject(formData: FormData) {
   return obj;
 }
 
+type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Json[]
+  | { [key: string]: Json };
+
+const isArrayBuffer = (body: unknown): body is ArrayBufferView | ArrayBuffer =>
+  body instanceof ArrayBuffer;
+
+function inspectBody(
+  body: BodyInit | Document | null | undefined,
+  bodyType: string | null | undefined,
+): Json {
+  if (body == null) return body;
+  if (body instanceof FormData) return formDataToObject(body);
+  if (body instanceof Blob)
+    return `[[ ${body.constructor.name}: ${body.size} bytes ]]`;
+  if (isArrayBuffer(body))
+    return `[[ ${body.constructor.name}: ${body.byteLength} bytes ]]`;
+  if (body instanceof URLSearchParams) return body.toString();
+  if (typeof body === "object" || typeof body === "function")
+    return `[[ ${body.constructor.name} ]]`;
+  if (typeof body === "string" && bodyType?.match(/[+/]json\b/))
+    return tryParseJson(body);
+  return body;
+}
+
 // capture `fetch` network requests
 export const wrapFetch = () => {
   const originalFetch = window.fetch;
@@ -34,12 +64,7 @@ export const wrapFetch = () => {
     const bodyType = reqHeaders.get("content-type") || undefined;
     let parsedBody;
     try {
-      parsedBody =
-        body instanceof FormData
-          ? formDataToObject(body)
-          : bodyType?.match(/[+/]json\b/)
-            ? tryParseJson(body)
-            : body;
+      parsedBody = inspectBody(body, bodyType);
     } catch {}
 
     const start = notify("fetch", {
@@ -54,16 +79,23 @@ export const wrapFetch = () => {
       .then(async (initResponse) => {
         const ct = initResponse.headers.get("content-type") || undefined;
 
+        const resBytes =
+          initResponse.headers.get("content-length") || undefined;
+
         let resBody;
         try {
           const response = initResponse.clone();
           // form data:
-          if (ct?.match(/\bform-data\b/))
+          if (ct?.match(/\bform-data|\bapplication\/x-www-form-urlencoded\b/))
             resBody = formDataToObject(await response.formData());
           if (ct?.match(/[+/]json\b/))
-            resBody = (await response.json()) as Record<string, unknown>;
-          else if (ct?.match(/\btext[+/]/)) resBody = await response.text();
-          else resBody = `[[ Unhandled content-type: ${ct || "<empty>"} ]]`;
+            // e.g. application/json, application/ld+json
+            resBody = (await response.json()) as Json;
+          else if (ct?.match(/\btext[+/]/))
+            // e.g. text/plain, text/html, text+ld/css
+            resBody = await response.text();
+          else
+            resBody = `[[ Unhandled content-type ${ct || "<empty>"} (size: ${resBytes ?? "<unknown>"} bytes) ]]`;
         } catch {}
 
         if (start)
@@ -141,12 +173,7 @@ export const wrapXHR = () => {
 
     let parsedBody;
     try {
-      parsedBody =
-        body instanceof FormData
-          ? formDataToObject(body)
-          : bodyType?.match(/[+/]json\b/)
-            ? tryParseJson(body)
-            : body;
+      parsedBody = inspectBody(body, bodyType);
     } catch {}
 
     const start = meta
@@ -165,11 +192,8 @@ export const wrapXHR = () => {
 
       let resBody;
       try {
-        resBody = ct?.match(/[+/]json\b/)
-          ? await this.response.clone().json()
-          : ct?.match(/\btext[+/]/)
-            ? await this.response.clone().text()
-            : `[[ Unhandled content-type: ${ct || "<empty>"} ]]`;
+        // parse `this.response`: form-data, json, text, blob, arraybuffer
+        resBody = inspectBody(this.response, ct);
       } catch {}
 
       notify(
